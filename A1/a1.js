@@ -11,6 +11,7 @@ var vertices;
 var primatives;
 var holes;
 var shape;
+var remesh;
 
 window.onload = function init()
 {
@@ -43,12 +44,14 @@ window.onload = function init()
     gl.enableVertexAttribArray( vPosition );
 
     thetaLoc = gl.getUniformLocation( program, "theta" );
+    remesh = true;
 
     // event handlers
-
+    
     numTimesToSubdivide = document.getElementById("recursion_slider").value;
     document.getElementById("recursion_slider").onchange = function() {
       numTimesToSubdivide = event.srcElement.value;
+      remesh = true;
       render();
     };
     theta = document.getElementById("twist_slider").value;
@@ -59,10 +62,12 @@ window.onload = function init()
     primatives = gl.TRIANGLES
     document.getElementById("primatives_triangles_radio").onchange = function() {
       primatives = gl.TRIANGLES
+      remesh = true;
       render();
     }
     document.getElementById("primatives_lines_radio").onchange = function() {
       primatives = gl.LINES
+      remesh = true;
       render();
     }
     
@@ -74,12 +79,19 @@ window.onload = function init()
 
     shape = "triangle";
     document.getElementById("shapes_triangle_radio").onchange = function() {
-      shape = "triangle";
+      if(shape != "triangle"){
+        shape = "triangle";
+        remesh = true;
+      }
       render();
     }
     document.getElementById("shapes_square_radio").onchange = function() {
-      shape = "square";
+      if(shape != "square"){
+        shape = "square";
+        remesh = true;
+      }
       render();
+
     }
 
     
@@ -184,22 +196,23 @@ function divideSquare( a, b, c, d, count )
 
 function render()
 {
-    points = [];
-    if(shape === "triangle"){
+    if(shape === "triangle" && remesh){
       vertices = [
         vec2( -v, -v ),
         vec2(  0,  v ),
         vec2(  v, -v )
       ];
+      points = [];
       divideTriangle( vertices[0], vertices[1], vertices[2], numTimesToSubdivide);
     }
-    else if(shape === "square"){
+    else if(shape === "square" && remesh){
       vertices = [
         vec2( -v, -v ),
         vec2( -v,  v ),
         vec2(  v,  v ),
         vec2(  v, -v )
       ];
+      points = [];
       divideSquare( vertices[0], vertices[1], vertices[2], vertices[3], numTimesToSubdivide);
     }
 
@@ -207,5 +220,5 @@ function render()
     gl.uniform1f(thetaLoc, theta);
     gl.bufferData( gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW );
     gl.drawArrays( primatives, 0, points.length );
-    points = [];
+    remesh = false;
 }
