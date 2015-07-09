@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<link rel="stylesheet" type="text/css" href="a1.css">
 <title>Assignment 1</title>
 
 <script id="vertex-shader" type="x-shader/x-vertex">
@@ -39,17 +40,38 @@ main()
 </head>   
 
 <body>
-  <canvas id="gl-canvas" width="768" height="768">
-    Oops ... your browser doesn't support the HTML5 canvas element
-  </canvas>
-  <div>
-    recursion 
-      <input id="rec_slider" type="range"
-       min="0" max="5" step="1" value="3" />
-      <br/>
-    twist 
-      <input id="twist_slider" type="range"
-      min="0" max="1" step="0.1" value="0" />
+  <div class="section group">
+	<div class="col span_3_of_4">
+          <canvas id="gl-canvas" width="960" height="960">
+            Oops ... your browser doesn't support the HTML5 canvas element
+          </canvas>
+	</div>
+	<div class="col span_1_of_4">
+          r 
+            <input id="recursion_slider" type="range"
+             min="0" max="5" step="1" value="0" />
+            <br/>
+          t 
+            <input id="twist_slider" type="range"
+            min="-2" max="2" step="0.05" value="0" />
+            <br/>
+          p
+            <input id="primatives_triangles_radio" type="radio" 
+            name="primatives_radio" checked="checked"/>
+            <input id="primatives_lines_radio" type="radio"
+            name="primatives_radio"/>
+            <br/>
+          h
+            <input id="holes_checkbox" type="checkbox"/>
+            <br/>
+          s
+            <input id="shapes_triangle_radio" type="radio" 
+            name="shapes_radio" checked="checked"/>
+            <input id="shapes_square_radio" type="radio"
+            name="shapes_radio"/>
+            <br/>
+                          
+	</div>
   </div>
 </body>
 </html>
