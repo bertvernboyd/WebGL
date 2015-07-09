@@ -74,6 +74,7 @@ window.onload = function init()
     holes = document.getElementById("holes_checkbox").checked;
     document.getElementById("holes_checkbox").onchange = function() {
       holes = event.srcElement.checked;
+      remesh = true;
       render();
     }
 
