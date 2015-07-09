@@ -70,31 +70,40 @@ window.onload = function init()
       remesh = true;
       render();
     }
-    
-    holes = document.getElementById("holes_checkbox").checked;
-    document.getElementById("holes_checkbox").onchange = function() {
-      holes = event.srcElement.checked;
-      remesh = true;
-      render();
-    }
 
     shape = "triangle";
     document.getElementById("shapes_triangle_radio").onchange = function() {
-      if(shape != "triangle"){
+      if(shape != "triangle" || holes){
         shape = "triangle";
+        holes = false;
+        remesh = true;
+      }
+      render();
+    }
+    document.getElementById("shapes_sierpinski_triangle_radio").onchange = function() {
+      if(shape != "triangle" || !holes){
+        shape = "triangle";
+        holes = true;
         remesh = true;
       }
       render();
     }
     document.getElementById("shapes_square_radio").onchange = function() {
-      if(shape != "square"){
+      if(shape != "square" || holes){
         shape = "square";
+        holes = false;
         remesh = true;
       }
       render();
-
     }
-
+    document.getElementById("shapes_sierpinski_square_radio").onchange = function() {
+      if(shape != "square" || !holes){
+        shape = "square";
+        holes = true;
+        remesh = true;
+      }
+      render();
+    }
     
     render();
 };
