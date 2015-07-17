@@ -55,8 +55,10 @@
        -moz-appearance:none;
             appearance:none;
 }
-.visa{background-image:url(http://i.imgur.com/lXzJ1eB.png);}
-.mastercard{background-image:url(http://i.imgur.com/SJbRQF7.png);}
+.triangle{background-image:url(assets/triangle.png);}
+.sierpenski_triangle{background-image:url(assets/sierpenski_triangle.png);}
+.square{background-image:url(assets/square.png);}
+.sierpenski_square{background-image:url(assets/sierpenski_square.png);}
 
 .radio-selector input:active +.shape{opacity: .9;}
 .radio-selector input:checked +.shape{
@@ -69,7 +71,7 @@
     background-size:contain;
     background-repeat:no-repeat;
     display:inline-block;
-    width:100px;height:70px;
+    width:64px;height:64px;
     -webkit-transition: all 100ms ease-in;
        -moz-transition: all 100ms ease-in;
             transition: all 100ms ease-in;
