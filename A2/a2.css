@@ -1,3 +1,44 @@
 body {
   margin: 0px;
+  padding: 0px;
+}
+
+#colors{
+  font-size: 0px;  /* remove margins in inline block */
+  position: relative;
+  left: 32px;
+}
+
+.color_div{
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+}
+
+.black{
+  background-color: #000000;
+}
+
+.red{
+  background-color: #FF0000;
+}
+
+.yellow{
+  background-color: #FFFF00;
+}
+
+.green{
+  background-color: #00FF00;
+}
+
+.cyan{
+  background-color: #00FFFF;
+}
+
+.blue{
+  background-color: #0000FF;
+}
+
+.magenta{
+  background-color: #FF00FF;
 }

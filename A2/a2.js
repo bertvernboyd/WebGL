@@ -3,22 +3,11 @@
 var canvas;
 var jcanvas;
 var gl;
-
-
 var maxNumTriangles = 200;
 var maxNumVertices  = 3 * maxNumTriangles;
 var index = 0;
 var paint = false;
-
-var colors = [
-    vec4( 0.0, 0.0, 0.0, 1.0 ),  // black
-    vec4( 1.0, 0.0, 0.0, 1.0 ),  // red
-    vec4( 1.0, 1.0, 0.0, 1.0 ),  // yellow
-    vec4( 0.0, 1.0, 0.0, 1.0 ),  // green
-    vec4( 0.0, 0.0, 1.0, 1.0 ),  // blue
-    vec4( 1.0, 0.0, 1.0, 1.0 ),  // magenta
-    vec4( 0.0, 1.0, 1.0, 1.0 )   // cyan
-];
+var color = vec4(0, 0, 0, 255);
 
 
 window.onload = function init() {
@@ -44,8 +33,8 @@ window.onload = function init() {
 
   gl = WebGLUtils.setupWebGL( canvas );
   if ( !gl ) { alert( "WebGL isn't available" ); }
-    
-  canvas.addEventListener("mousemove", function(event){
+  
+  jcanvas.mousemove(function(event){
     if(paint){
       gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer );
       var t = vec2(2*event.clientX/canvas.width-1,
@@ -53,17 +42,26 @@ window.onload = function init() {
       gl.bufferSubData(gl.ARRAY_BUFFER, 8*index, flatten(t));
 
       gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
-      //t = vec4(colors[(index)%7]);
       t = vec4(0.0, 0.0, 0.0, 1.0);
-      gl.bufferSubData(gl.ARRAY_BUFFER, 16*index, flatten(t));
+      gl.bufferSubData(gl.ARRAY_BUFFER, 16*index, flatten(color));
       index++;
-      }
-    });
+    }
+  });
 
+  $(".color_div").mousedown(function(event){
+      var c = $(this).css("background-color");
+      var parts = c.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+      var r = parseInt(parts[1]);
+      var g = parseInt(parts[2]);
+      var b = parseInt(parts[3]);
+      color = vec4(r, g, b, 255);
+      
+  });
 
     gl.viewport( 0, 0, canvas.width, canvas.height );    
     gl.clearColor( 1.0, 1.0, 1.0, 1.0 );
 
+    gl.lineWidth(10.0);
 
     //
     //  Load shaders and initialize attribute buffers
@@ -89,15 +87,12 @@ window.onload = function init() {
     gl.enableVertexAttribArray( vColor );
 
     render();
-
 }
 
 
 function render() {
-
     gl.clear( gl.COLOR_BUFFER_BIT );
     gl.drawArrays( gl.LINE_STRIP, 0, index );
 
     window.requestAnimFrame(render);
-
 }
