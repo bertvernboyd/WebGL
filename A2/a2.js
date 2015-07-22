@@ -3,11 +3,11 @@
 var canvas;
 var jcanvas;
 var gl;
-var maxNumTriangles = 200;
-var maxNumVertices  = 3 * maxNumTriangles;
+var maxNumVertices  = 600;
 var index = 0;
 var paint = false;
 var color = vec4(0, 0, 0, 255);
+var endpoints = [0];
 
 
 window.onload = function init() {
@@ -18,6 +18,7 @@ window.onload = function init() {
   jcanvas.mousedown(function(event) {
       switch (event.which) {
         case 1:
+            endpoints.push(index);
             paint = true;
         case 2:
             break;
@@ -28,7 +29,7 @@ window.onload = function init() {
     }
   });
   jcanvas.mouseup(function(event) {
-     paint = false; 
+      paint = false; 
   });
 
   gl = WebGLUtils.setupWebGL( canvas );
@@ -44,24 +45,23 @@ window.onload = function init() {
       gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
       t = vec4(0.0, 0.0, 0.0, 1.0);
       gl.bufferSubData(gl.ARRAY_BUFFER, 16*index, flatten(color));
-      index++;
+      endpoints[endpoints.length-1] = ++index;
     }
   });
 
   $(".color_div").mousedown(function(event){
       var c = $(this).css("background-color");
-      var parts = c.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-      var r = parseInt(parts[1]);
-      var g = parseInt(parts[2]);
-      var b = parseInt(parts[3]);
+      var c_vals = c.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+      var r = parseInt(c_vals[1]);
+      var g = parseInt(c_vals[2]);
+      var b = parseInt(c_vals[3]);
       color = vec4(r, g, b, 255);
-      
   });
 
     gl.viewport( 0, 0, canvas.width, canvas.height );    
     gl.clearColor( 1.0, 1.0, 1.0, 1.0 );
 
-    gl.lineWidth(10.0);
+    gl.lineWidth(1.0);
 
     //
     //  Load shaders and initialize attribute buffers
@@ -92,7 +92,12 @@ window.onload = function init() {
 
 function render() {
     gl.clear( gl.COLOR_BUFFER_BIT );
-    gl.drawArrays( gl.LINE_STRIP, 0, index );
+    
+    for(var i = 0; i < endpoints.length; i++){
+        var a = (i == 0) ? 0 : endpoints[i-1];
+        var b = endpoints[i];   
+        gl.drawArrays( gl.LINE_STRIP, a, b-a );        
+    }
 
     window.requestAnimFrame(render);
 }
