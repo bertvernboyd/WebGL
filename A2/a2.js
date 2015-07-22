@@ -51,12 +51,19 @@ window.onload = function init() {
 
   $(".color_div").mousedown(function(event){
       var c = $(this).css("background-color");
+      console.log(c);
+      //$(".board").css("cursor", )
       var c_vals = c.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
       var r = parseInt(c_vals[1]);
       var g = parseInt(c_vals[2]);
       var b = parseInt(c_vals[3]);
       color = vec4(r, g, b, 255);
+      var cursorId = c_vals[1] + "_" + c_vals[2] + "_" + c_vals[3];
+      var cursorVal = "url(assets/" + cursorId + ".png), auto";
+      $(".board").css("cursor", cursorVal);
   });
+  
+  
 
     gl.viewport( 0, 0, canvas.width, canvas.height );    
     gl.clearColor( 1.0, 1.0, 1.0, 1.0 );

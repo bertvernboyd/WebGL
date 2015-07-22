@@ -42,3 +42,7 @@ body {
 .magenta{
   background-color: #FF00FF;
 }
+
+.board {
+   cursor: url(assets/0_0_0.png), auto;
+}
