@@ -6,14 +6,32 @@ var gl;
 var maxNumVertices  = 60000;
 var index = 0;
 var paint = false;
-var color = vec4(0, 0, 0, 255);
+var color = vec4(0, 0, 0, 1);
 var endpoints = [0];
 var vPosition;
 var cBuffer;
 var vBuffers;
-var nBuffers = 5;
+var nBuffers = 25;
+var brushes = [];
+var brush;
 
 window.onload = function init() {
+  
+  brushes[0] = [vec2(0,0)];
+  brushes[1] = [vec2(0,0), vec2(-1,0), vec2(1,0), vec2(0,-1), vec2(0,1)];
+  brushes[2] = [vec2(0,0), vec2(-1,0), vec2(1,0), vec2(0,-1), vec2(0,1), 
+                vec2(-1,-1), vec2(-1,1), vec2(1,-1), vec2(1,1), vec2(-2,0), 
+                vec2(0,-2), vec2(0,2), vec2(2,0)];
+  brushes[2] = [vec2(0,0), vec2(-1,0), vec2(1,0), vec2(0,-1), vec2(0,1), 
+                vec2(-1,-1), vec2(-1,1), vec2(1,-1), vec2(1,1), vec2(-2,0), 
+                vec2(0,-2), vec2(0,2), vec2(2,0), vec2(-2,-1), vec2(-2,1),
+                vec2(2,-1), vec2(2,1), vec2(-1,-2), vec2(-1,2), vec2(1,-2),
+                vec2(1,2), vec2(-3,0), vec2(0,-3), vec2(0,3), vec2(3,0)];                
+  
+  
+  brush = brushes[2];
+  
+  console.log(brushes.length);
   
   canvas = document.getElementById( "gl-canvas" );
   jcanvas = $("#gl-canvas");
@@ -39,26 +57,13 @@ window.onload = function init() {
     if(paint){
    
       var t;
-
-      gl.bindBuffer( gl.ARRAY_BUFFER, vBuffers[0] );
-      t = c_to_s(event.clientX, event.clientY, canvas.width, canvas.height);
-      gl.bufferSubData(gl.ARRAY_BUFFER, 8*index, flatten(t));
-
-      gl.bindBuffer( gl.ARRAY_BUFFER, vBuffers[1]);
-      t = c_to_s(event.clientX+1, event.clientY, canvas.width, canvas.height);
-      gl.bufferSubData(gl.ARRAY_BUFFER, 8*index, flatten(t));
-
-      gl.bindBuffer( gl.ARRAY_BUFFER, vBuffers[2]);
-      t = c_to_s(event.clientX-1, event.clientY, canvas.width, canvas.height);
-      gl.bufferSubData(gl.ARRAY_BUFFER, 8*index, flatten(t));
-
-      gl.bindBuffer( gl.ARRAY_BUFFER, vBuffers[3]);
-      t = c_to_s(event.clientX, event.clientY+1, canvas.width, canvas.height);
-      gl.bufferSubData(gl.ARRAY_BUFFER, 8*index, flatten(t));
-
-      gl.bindBuffer( gl.ARRAY_BUFFER, vBuffers[4]);
-      t = c_to_s(event.clientX, event.clientY-1, canvas.width, canvas.height);
-      gl.bufferSubData(gl.ARRAY_BUFFER, 8*index, flatten(t));
+      
+      for(var v = 0; v < nBuffers && v < brush.length; v++)
+      {
+        gl.bindBuffer( gl.ARRAY_BUFFER, vBuffers[v] );
+        t = c_to_s(event.clientX+brush[v][0], event.clientY+brush[v][1], canvas.width, canvas.height);
+        gl.bufferSubData(gl.ARRAY_BUFFER, 8*index, flatten(t));  
+      }
       
       gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
       gl.bufferSubData(gl.ARRAY_BUFFER, 16*index, flatten(color));
@@ -68,13 +73,13 @@ window.onload = function init() {
 
   $(".color_div").mousedown(function(event){
       var c = $(this).css("background-color");
-      console.log(c);
+      //console.log(c);
       //$(".board").css("cursor", )
       var c_vals = c.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-      var r = parseInt(c_vals[1]);
-      var g = parseInt(c_vals[2]);
-      var b = parseInt(c_vals[3]);
-      color = vec4(r, g, b, 255);
+      var r = parseInt(c_vals[1])/255.0;
+      var g = parseInt(c_vals[2])/255.0;
+      var b = parseInt(c_vals[3])/255.0;
+      color = vec4(r, g, b, 1.0);
       var cursorId = c_vals[1] + "_" + c_vals[2] + "_" + c_vals[3];
       var cursorVal = "url(assets/" + cursorId + ".png), auto";
       $(".board").css("cursor", cursorVal);

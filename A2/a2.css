@@ -19,30 +19,59 @@ body {
   background-color: #000000;
 }
 
+.gray{
+  background-color: #7F7F7F;
+}
+
 .red{
   background-color: #FF0000;
+}
+
+.orange{
+   background-color: #FF7F00;
 }
 
 .yellow{
   background-color: #FFFF00;
 }
 
+.light_green{
+  background-color: #7FFF00;
+}
+
 .green{
   background-color: #00FF00;
+}
+
+.teal{
+  background-color: #00FF7F;
 }
 
 .cyan{
   background-color: #00FFFF;
 }
 
+.light_blue{
+  background-color: #007FFF;
+}
+
 .blue{
   background-color: #0000FF;
+}
+
+.violet{
+  background-color: #7F00FF;
 }
 
 .magenta{
   background-color: #FF00FF;
 }
 
+.pink{
+  background-color: #FF007F;
+}
+
 .board {
+   cursor: url(assets/0_0_0.png), auto;
    cursor: url(assets/0_0_0.png), auto;
 }
