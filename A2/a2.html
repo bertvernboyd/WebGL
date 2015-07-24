@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<link rel="stylesheet" type="text/css" href="a2.css">
+<title>Assignment 2</title>
+
+<script id="vertex-shader" type="x-shader/x-vertex">
+
+attribute vec4 vPosition;
+attribute vec4 vColor;
+uniform float theta;
+
+varying vec4 fColor;
+
+void
+main()
+{
+    gl_Position = vPosition;
+    fColor = vColor;
+    
+    float d = length( vPosition.xy );
+    float s = sin( d*theta );
+    float c = cos( d*theta );
+
+    gl_Position.x = c * vPosition.x - s * vPosition.y;
+    gl_Position.y = s * vPosition.x + c * vPosition.y;
+    gl_Position.z = 0.0;
+    gl_Position.w = 1.0;
+//    gl_PointSize = 10.0;
+}
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+
+precision mediump float;
+
+varying vec4 fColor;
+
+void
+main()
+{
+    gl_FragColor = fColor;
+}
+</script>
+
+<script type="text/javascript" src="../Common/webgl-utils.js"></script>
+<script type="text/javascript" src="../Common/initShaders.js"></script>
+<script type="text/javascript" src="../Common/MV.js"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script type="text/javascript" src="a2.js"></script>
+</head>
+<body>
+<canvas id="gl-canvas" class="board" width="512" height="512">
+Oops ... your browser doesn't support the HTML5 canvas element
+</canvas>
+<br/>
+<br/>
+<div id="colors">
+  <div class="color_div white"></div>
+  <div class="color_div gray"></div>
+  <div class="color_div red"></div>
+  <div class="color_div orange"></div>
+  <div class="color_div yellow"></div>
+  <div class="color_div light_green"></div>
+  <div class="color_div green"></div>
+  <div class="color_div teal"></div>
+  <div class="color_div cyan"></div>
+  <div class="color_div light_blue"></div>  
+  <div class="color_div blue"></div>
+  <div class="color_div violet"></div>
+  <div class="color_div magenta"></div>
+  <div class="color_div pink"></div>
+</div>
+<br/>
+<div id="brushes" class="button_div">
+  <div class="seperator"></div>
+  <b>Chalk Size:</b>
+  <div class="hseperator"></div>
+  S<input type="radio" name="brush" checked="checked" value="0" />
+  <div class="hseperator"></div>
+  M<input type="radio" name="brush" value="1" />
+  <div class="hseperator"></div>
+  L<input type="radio" name="brush" value="2" />
+</div>
+<div class="button_div">
+  <div class="seperator"></div>
+  <div class="tseperator"></div>
+  <input id="clear" type="button" value="Clear"/>
+</div>
+</body>
+</html>

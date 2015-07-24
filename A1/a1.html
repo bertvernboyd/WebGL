@@ -12,7 +12,7 @@ uniform float theta;
 void
 main()
 {  
-    float d = length( vPosition );
+    float d = length( vPosition.xy );
     float s = sin( d*theta );
     float c = cos( d*theta );
 
@@ -89,7 +89,6 @@ main()
         <input id="shapes_sierpinski_square_radio" type="radio" name="shapes_radio" value="shapes_sierpinski_square_radio" />
         <label class="shape sierpenski_square" for="shapes_sierpinski_square_radio"></label>
       </div>
-
     </div>
   </div>
 </body>
