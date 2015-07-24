@@ -6,7 +6,7 @@ var gl;
 var maxNumVertices  = 60000;
 var index = 0;
 var paint = false;
-var color = vec4(0, 0, 0, 1);
+var color = vec4(1, 1, 1, 1);
 var endpoints = [0];
 var vPosition;
 var cBuffer;
@@ -14,9 +14,11 @@ var vBuffers;
 var nBuffers = 25;
 var brushes = [];
 var brush;
+var theta = 0;
+var thetaLoc;
 
 window.onload = function init() {
-  
+
   brushes[0] = [vec2(0,0)];
   brushes[1] = [vec2(0,0), vec2(-1,0), vec2(1,0), vec2(0,-1), vec2(0,1)];
   brushes[2] = [vec2(0,0), vec2(-1,0), vec2(1,0), vec2(0,-1), vec2(0,1), 
@@ -29,9 +31,22 @@ window.onload = function init() {
                 vec2(1,2), vec2(-3,0), vec2(0,-3), vec2(0,3), vec2(3,0)];                
   
   
-  brush = brushes[2];
+  brush = brushes[0];
+
+  $("input[name=brush]:radio").change(function () {
+    var selected = $("#brushes input[type='radio']:checked");    
+    brush = brushes[parseInt(selected.val())];
+  });
   
-  console.log(brushes.length);
+  $("#clear").click(function() {
+     index = 0; 
+     endpoints = [0];
+  });
+  
+  theta = document.getElementById("twist_slider").value;
+  document.getElementById("twist_slider").onchange = function() {
+    theta = event.srcElement.value;
+  };
   
   canvas = document.getElementById( "gl-canvas" );
   jcanvas = $("#gl-canvas");
@@ -62,6 +77,7 @@ window.onload = function init() {
       {
         gl.bindBuffer( gl.ARRAY_BUFFER, vBuffers[v] );
         t = c_to_s(event.clientX+brush[v][0], event.clientY+brush[v][1], canvas.width, canvas.height);
+
         gl.bufferSubData(gl.ARRAY_BUFFER, 8*index, flatten(t));  
       }
       
@@ -73,8 +89,6 @@ window.onload = function init() {
 
   $(".color_div").mousedown(function(event){
       var c = $(this).css("background-color");
-      //console.log(c);
-      //$(".board").css("cursor", )
       var c_vals = c.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
       var r = parseInt(c_vals[1])/255.0;
       var g = parseInt(c_vals[2])/255.0;
@@ -89,8 +103,8 @@ window.onload = function init() {
   if ( !gl ) { alert( "WebGL isn't available" ); }
 
     gl.viewport( 0, 0, canvas.width, canvas.height );    
-    gl.clearColor( 1.0, 1.0, 1.0, 1.0 );
-
+    gl.clearColor( 0.0, 0.0, 0.0, 1.0 );
+    
     gl.lineWidth(1.0);
 
     //
@@ -119,6 +133,8 @@ window.onload = function init() {
     gl.vertexAttribPointer( vColor, 4, gl.FLOAT, false, 0, 0 );
     gl.enableVertexAttribArray( vColor );
     
+    thetaLoc = gl.getUniformLocation( program, "theta" );
+    
     render();
 }
 
@@ -128,18 +144,20 @@ function c_to_s(x, y, w, h){
 
 
 function render() {
-    gl.clear( gl.COLOR_BUFFER_BIT );
+    gl.clear( gl.COLOR_BUFFER_BIT);
 
-    for(var v = 0; v < vBuffers.length; v++){
-      gl.bindBuffer( gl.ARRAY_BUFFER, vBuffers[v]);
-      gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
+    gl.uniform1f(thetaLoc, theta);
 
-      for(var i = 0; i < endpoints.length; i++){
-        var a = (i == 0) ? 0 : endpoints[i-1];
-        var b = endpoints[i];   
-        gl.drawArrays( gl.LINE_STRIP, a, b-a );        
-      }
+    for(var i = 0; i < endpoints.length; i++){
+      var a = (i == 0) ? 0 : endpoints[i-1];
+      var b = endpoints[i];   
+      for(var v = 0; v < vBuffers.length; v++){
+        gl.bindBuffer( gl.ARRAY_BUFFER, vBuffers[v]);
+        gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
+        gl.drawArrays( gl.LINE_STRIP, a, b-a );  
+      }      
     }
+    
 
     window.requestAnimFrame(render);
 }

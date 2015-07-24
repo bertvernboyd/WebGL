@@ -9,6 +9,7 @@
 
 attribute vec4 vPosition;
 attribute vec4 vColor;
+uniform float theta;
 
 varying vec4 fColor;
 
@@ -17,6 +18,15 @@ main()
 {
     gl_Position = vPosition;
     fColor = vColor;
+    
+    float d = length( vPosition.xy );
+    float s = sin( d*theta );
+    float c = cos( d*theta );
+
+    gl_Position.x = c * vPosition.x - s * vPosition.y;
+    gl_Position.y = s * vPosition.x + c * vPosition.y;
+    gl_Position.z = 0.0;
+    gl_Position.w = 1.0;
 //    gl_PointSize = 10.0;
 }
 </script>
@@ -45,8 +55,9 @@ main()
 Oops ... your browser doesn't support the HTML5 canvas element
 </canvas>
 <br/>
+<br/>
 <div id="colors">
-  <div class="color_div black"></div>
+  <div class="color_div white"></div>
   <div class="color_div gray"></div>
   <div class="color_div red"></div>
   <div class="color_div orange"></div>
@@ -61,5 +72,15 @@ Oops ... your browser doesn't support the HTML5 canvas element
   <div class="color_div magenta"></div>
   <div class="color_div pink"></div>
 </div>
+<br/>
+<div id="brushes">
+  <input type="radio" name="brush" checked="checked" value="0" />
+  <input type="radio" name="brush" value="1" />
+  <input type="radio" name="brush" value="2" />
+</div>
+<div>
+  <input id="clear" type="button" value="Clear"/>
+</div>
+<input id="twist_slider" type="range" min="0" max="5" step="0.05" value="0" />
 </body>
 </html>

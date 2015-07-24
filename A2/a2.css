@@ -1,6 +1,7 @@
 body {
   margin: 0px;
   padding: 0px;
+  background-color: black;
 }
 
 #colors{
@@ -15,8 +16,8 @@ body {
   height: 32px;
 }
 
-.black{
-  background-color: #000000;
+.white{
+  background-color: #FFFFFF;
 }
 
 .gray{
@@ -72,6 +73,5 @@ body {
 }
 
 .board {
-   cursor: url(assets/0_0_0.png), auto;
-   cursor: url(assets/0_0_0.png), auto;
+   cursor: url(assets/255_255_255.png), auto;
 }
