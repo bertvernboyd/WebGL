@@ -14,8 +14,6 @@ var vBuffers;
 var nBuffers = 25;
 var brushes = [];
 var brush;
-var theta = 0;
-var thetaLoc;
 
 window.onload = function init() {
 
@@ -42,11 +40,6 @@ window.onload = function init() {
      index = 0; 
      endpoints = [0];
   });
-  
-  theta = document.getElementById("twist_slider").value;
-  document.getElementById("twist_slider").onchange = function() {
-    theta = event.srcElement.value;
-  };
   
   canvas = document.getElementById( "gl-canvas" );
   jcanvas = $("#gl-canvas");
@@ -133,8 +126,6 @@ window.onload = function init() {
     gl.vertexAttribPointer( vColor, 4, gl.FLOAT, false, 0, 0 );
     gl.enableVertexAttribArray( vColor );
     
-    thetaLoc = gl.getUniformLocation( program, "theta" );
-    
     render();
 }
 
@@ -145,8 +136,6 @@ function c_to_s(x, y, w, h){
 
 function render() {
     gl.clear( gl.COLOR_BUFFER_BIT);
-
-    gl.uniform1f(thetaLoc, theta);
 
     for(var i = 0; i < endpoints.length; i++){
       var a = (i == 0) ? 0 : endpoints[i-1];
