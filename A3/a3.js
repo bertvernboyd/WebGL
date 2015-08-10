@@ -17,12 +17,19 @@ var r = 0.1;
 var vertices;
 var vBuffer;
 
+var theta = [ 0, 0, 0 ];
+var thetaLoc;
+
+var translation = [0, 0];
+var translationLoc;
+
 window.onload = function init()
 {
-
+    points = [];
+    vertices = square_vertices();
     colors = [];
 
-    color_cube(vec2(0,0));
+    color_cube();
 
     var canvas = $( "#gl-canvas" );
 
@@ -33,6 +40,8 @@ window.onload = function init()
 
     gl.viewport( 0, 0, canvas[0].width, canvas[0].height );
     gl.clearColor( 1.0, 1.0, 1.0, 1.0 );
+
+    gl.enable(gl.DEPTH_TEST);
 
     //  Load shaders and initialize attribute buffers
 
@@ -59,6 +68,9 @@ window.onload = function init()
     gl.vertexAttribPointer( vPosition, 3, gl.FLOAT, false, 0, 0 );
     gl.enableVertexAttribArray( vPosition );
 
+    thetaLoc = gl.getUniformLocation(program, "theta");
+    translationLoc = gl.getUniformLocation(program, "translation");
+
     canvas.mousedown(function(event) {
       switch (event.which) {
         case 1:
@@ -74,31 +86,31 @@ window.onload = function init()
   });
 
     canvas.mousemove(function(event){
-        color_cube(canvas_to_screen(event.clientX, event.clientY, canvas[0].width, canvas[0].height)); 
-        gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer );
-        gl.bufferData( gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW ); 
+        //translate by
+        var t = canvas_to_screen(event.clientX, event.clientY, canvas[0].width, canvas[0].height); 
+        translation = [t[0], t[1], 0, 0];
+
+    });
+    canvas.mouseout(function(event){
+        translation = [0, 0, 0, 0];
     });
 
     render();
 };
 
 
-function render() {
-    gl.clear( gl.COLOR_BUFFER_BIT );
-    gl.drawArrays( gl.TRIANGLES, 0, points.length );
-    window.requestAnimFrame(render);
-}
 
-function square_vertices(s) {
+
+function square_vertices() {
   return [
-    vec3(-r+s[0], -r+s[1],  r),
-    vec3(-r+s[0],  r+s[1],  r),
-    vec3( r+s[0],  r+s[1],  r),
-    vec3( r+s[0], -r+s[1],  r),
-    vec3(-r+s[0], -r+s[1], -r),
-    vec3(-r+s[0],  r+s[1], -r),
-    vec3( r+s[0],  r+s[1], -r),
-    vec3( r+s[0], -r+s[1], -r),
+    vec3(-r, -r,  r),
+    vec3(-r,  r,  r),
+    vec3( r,  r,  r),
+    vec3( r, -r,  r),
+    vec3(-r, -r, -r),
+    vec3(-r,  r, -r),
+    vec3( r,  r, -r),
+    vec3( r, -r, -r),
   ];
 }
 
@@ -113,9 +125,8 @@ function quad(a, b, c, d){
   }
 }
 
-function color_cube(s){
-  points = [];
-  vertices = square_vertices(s);
+function color_cube(){
+
   quad( 1, 0, 3, 2 );
   quad( 2, 3, 7, 6 );
   quad( 3, 0, 4, 7 );
@@ -126,6 +137,17 @@ function color_cube(s){
 
 function canvas_to_screen(x, y, w, h){
     return vec2(2*x/w-1, 2*(h-y)/h-1);
+}
+
+function render() {
+    gl.clear( gl.COLOR_BUFFER_BIT );
+    theta[0] += 2;
+    theta[1] += 0;
+    theta[2] += 2;
+    gl.uniform3fv(thetaLoc, theta);
+    gl.uniform4fv(translationLoc, translation);
+    gl.drawArrays( gl.TRIANGLES, 0, points.length );
+    window.requestAnimFrame(render);
 }
 
 
