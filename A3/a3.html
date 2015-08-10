@@ -39,11 +39,6 @@ main()
 		    0.0,  0.0, 1.0, 0.0,
 		    0.0,  0.0, 0.0, 1.0 );
 
-    mat4 t = mat4(1.0, 0.0, 0.0, translation.x,
-                  0.0, 1.0, 0.0, translation.y,
-                  0.0, 0.0, 1.0, 0.0,
-                  0.0, 0.0, 0.0, 1.0 );
-
     gl_Position = rz * ry * rx * vPosition + translation;
     fColor = vColor;
 }
