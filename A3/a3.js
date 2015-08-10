@@ -13,13 +13,16 @@ var vertex_colors = [
         [ 1.0, 1.0, 1.0, 1.0 ]   // white
 ];
 var colors;
+var r = 0.1;
+var vertices;
+var vBuffer;
 
 window.onload = function init()
 {
-    points = [];
+
     colors = [];
 
-    color_cube();
+    color_cube(vec2(0,0));
 
     var canvas = $( "#gl-canvas" );
 
@@ -46,7 +49,7 @@ window.onload = function init()
 
     // Load the data into the GPU
 
-    var vBuffer = gl.createBuffer();
+    vBuffer = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer );
     gl.bufferData( gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW );
 
@@ -60,7 +63,7 @@ window.onload = function init()
       switch (event.which) {
         case 1:
             console.log('Click');
-            break;
+            console.log(canvas_to_screen(event.clientX, event.clientY, canvas[0].width, canvas[0].height));
         case 2:
             break;
         case 3:
@@ -69,6 +72,12 @@ window.onload = function init()
             alert('You have a strange Mouse!');
     }
   });
+
+    canvas.mousemove(function(event){
+        color_cube(canvas_to_screen(event.clientX, event.clientY, canvas[0].width, canvas[0].height)); 
+        gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer );
+        gl.bufferData( gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW ); 
+    });
 
     render();
 };
@@ -80,22 +89,22 @@ function render() {
     window.requestAnimFrame(render);
 }
 
-function square_vertices() {
+function square_vertices(s) {
   return [
-    vec3(-0.5, -0.5,  0.5),
-    vec3(-0.5,  0.5,  0.5),
-    vec3( 0.5,  0.5,  0.5),
-    vec3( 0.5, -0.5,  0.5),
-    vec3(-0.5, -0.5, -0.5),
-    vec3(-0.5,  0.5, -0.5),
-    vec3( 0.5,  0.5, -0.5),
-    vec3( 0.5, -0.5, -0.5),
+    vec3(-r+s[0], -r+s[1],  r),
+    vec3(-r+s[0],  r+s[1],  r),
+    vec3( r+s[0],  r+s[1],  r),
+    vec3( r+s[0], -r+s[1],  r),
+    vec3(-r+s[0], -r+s[1], -r),
+    vec3(-r+s[0],  r+s[1], -r),
+    vec3( r+s[0],  r+s[1], -r),
+    vec3( r+s[0], -r+s[1], -r),
   ];
 }
 
 function quad(a, b, c, d){
   
-  var vertices = square_vertices();
+
   var indices = [a, b, c, a, c, d];
 
   for ( var i = 0; i < indices.length; ++i){
@@ -104,13 +113,19 @@ function quad(a, b, c, d){
   }
 }
 
-function color_cube(){
+function color_cube(s){
+  points = [];
+  vertices = square_vertices(s);
   quad( 1, 0, 3, 2 );
   quad( 2, 3, 7, 6 );
   quad( 3, 0, 4, 7 );
   quad( 6, 5, 1, 2 );
   quad( 4, 5, 6, 7 );
   quad( 5, 4, 0, 1 ); 
+}
+
+function canvas_to_screen(x, y, w, h){
+    return vec2(2*x/w-1, 2*(h-y)/h-1);
 }
 
 
