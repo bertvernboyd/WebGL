@@ -162,47 +162,32 @@ function create_cub3()
 {
     vertices = square_vertic3s();
 
-    triangl3(0, 11, 5);
-    triangl3(0, 5, 1);
-    triangl3(0, 1, 7);
-    triangl3(0, 7, 10);
-    triangl3(0, 10, 11);
-    triangl3(1, 5, 9);
-    triangl3(5, 11, 4);
-    triangl3(11, 10, 2);
-    triangl3(10, 7, 6);
-    triangl3(7, 1, 8);
-    triangl3(3, 9, 4);
-    triangl3(3, 4, 2);
-    triangl3(3, 2, 6);
-    triangl3(3, 6, 8);
-    triangl3(3, 8, 9);
-    triangl3(4, 9, 5);
-    triangl3(2, 4, 11);
-    triangl3(6, 2, 10);
-    triangl3(8, 6, 7);
-    triangl3(9, 8, 1);
+    var indices = [
+           0, 11,  5,  0,  5,  1,  0,  1,  7,  0,  7, 10,  0, 10, 11,
+           1,  5,  9,  5, 11,  4, 11, 10,  2, 10,  7,  6,  7,  1,  8,
+           3,  9,  4,  3,  4,  2,  3,  2,  6,  3,  6,  8,  3,  8,  9,
+           4,  9,  5,  2,  4, 11,  6,  2, 10,  8,  6,  7,  9,  8,  1
+        ];
+
+    var count = 3;
+    for(var i = 0; i < indices.length; i += 3){
+      divideTriangle(
+              vertices[indices[i]], 
+              vertices[indices[i+1]], 
+              vertices[indices[i+2]], 
+              count, gl.TRIANGLES);
+    }
+
     a[nObj] = points.length;
-    lin3(0, 11, 5);
-    lin3(0, 5, 1);
-    lin3(0, 1, 7);
-    lin3(0, 7, 10);
-    lin3(0, 10, 11);
-    lin3(1, 5, 9);
-    lin3(5, 11, 4);
-    lin3(11, 10, 2);
-    lin3(10, 7, 6);
-    lin3(7, 1, 8);
-    lin3(3, 9, 4);
-    lin3(3, 4, 2);
-    lin3(3, 2, 6);
-    lin3(3, 6, 8);
-    lin3(3, 8, 9);
-    lin3(4, 9, 5);
-    lin3(2, 4, 11);
-    lin3(6, 2, 10);
-    lin3(8, 6, 7);
-    lin3(9, 8, 1);
+    
+    for(var i = 0; i < indices.length; i += 3){
+      divideTriangle(
+              vertices[indices[i]], 
+              vertices[indices[i+1]], 
+              vertices[indices[i+2]], 
+              count, gl.LINES);
+    }
+
     b[nObj] = points.length;
 }
 
@@ -217,21 +202,20 @@ function divideTriangle( a, b, c, count, primatives)
         }
     }
     else {
-
         var ab = mix( a, b, 0.5 );
         var ac = mix( a, c, 0.5 );
         var bc = mix( b, c, 0.5 );
 
         --count;
 
-        divideTriangle( a, ab, ac, count );
-        divideTriangle( c, ac, bc, count );
-        divideTriangle( b, bc, ab, count );
-        divideTriangle( ab, ac, bc, count );
+        divideTriangle( a, ab, ac, count, primatives );
+        divideTriangle( c, ac, bc, count, primatives );
+        divideTriangle( b, bc, ab, count, primatives );
+        divideTriangle( ab, ac, bc, count, primatives );
     }
 }
 
-function tri_quad(a, b, c, d){
+function tri_quad(a, b, c, d){// indices
 
   var indices = [a, b, c, a, c, d];
 
@@ -241,7 +225,7 @@ function tri_quad(a, b, c, d){
   }
 }
 
-function line_quad(a, b, c, d){
+function line_quad(a, b, c, d){// indices
 
   var indices = [a, b, b, c, c, d, d, a];
 
@@ -251,20 +235,19 @@ function line_quad(a, b, c, d){
   }
 }
 
-function triangl3(a, b, c)
-{
-    var indices = [a, b, c];
-    for ( var i = 0; i < indices.length; ++i){
-      points.push( vertices[indices[i]] );
+function triangl3(a, b, c){// vertices
+    var v = [a, b, c];
+    for ( var i = 0; i < v.length; ++i){
+      points.push( v[i] );
       colors.push([ 1.0, 0.0, 0.0, 1.0 ]);       
     }   
 }
 
 function lin3(a,b,c)
 {
-    var indices = [a,b,b,c,c,a];
-    for ( var i = 0; i < indices.length; ++i){
-        points.push( vertices[indices[i]]);
+    var v = [a,b,b,c,c,a];
+    for ( var i = 0; i < v.length; ++i){
+        points.push( v[i]) ;
         colors.push([ 0.0, 0.0, 0.0, 1.0 ])
     }
 }
@@ -279,7 +262,7 @@ function create_new_object()
     points = [];         
 
     colors = [];
-    create_cube();
+    create_cub3();
     cBuffers[nObj] = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, cBuffers[nObj] );
     gl.bufferData( gl.ARRAY_BUFFER, flatten(colors), gl.STATIC_DRAW );
