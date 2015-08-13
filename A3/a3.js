@@ -2,15 +2,24 @@
 
 var gl;
 var points;
+var BLACK = [ 0.0, 0.0, 0.0, 1.0 ];
+var RED = [ 1.0, 0.0, 0.0, 1.0 ];
+var YELLOW = [ 1.0, 1.0, 0.0, 1.0 ];
+var GREEN = [ 0.0, 1.0, 0.0, 1.0 ];
+var BLUE = [ 0.0, 0.0, 1.0, 1.0 ];
+var MAGENTA = [ 1.0, 0.0, 1.0, 1.0 ];
+var CYAN = [ 0.0, 1.0, 1.0, 1.0 ];
+var WHITE = [ 1.0, 1.0, 1.0, 1.0 ];
+
 var vertex_colors = [
-        [ 0.0, 0.0, 0.0, 1.0 ],  // black
-        [ 1.0, 0.0, 0.0, 1.0 ],  // red
-        [ 1.0, 1.0, 0.0, 1.0 ],  // yellow
-        [ 0.0, 1.0, 0.0, 1.0 ],  // green
-        [ 0.0, 0.0, 1.0, 1.0 ],  // blue
-        [ 1.0, 0.0, 1.0, 1.0 ],  // magenta
-        [ 0.0, 1.0, 1.0, 1.0 ],  // cyan
-        [ 1.0, 1.0, 1.0, 1.0 ]   // white
+        BLACK,  // black
+        RED,  // red
+        YELLOW,  // yellow
+        GREEN,  // green
+        BLUE,  // blue
+        MAGENTA,  // magenta
+        CYAN,  // cyan
+        WHITE   // white
 ];
 var colors;
 var r = 0.1;
@@ -23,6 +32,8 @@ var cBuffers = [];
 var vPosition;
 var vColor;
 var nObj = 0;
+var modelIndex = 0;
+var N_MODELS = 3;
 
 var theta = [[ Math.random()*360, Math.random()*360, Math.random()*360 ]];
 var thetaLoc;
@@ -33,25 +44,20 @@ var translationLoc;
 
 window.onload = function init()
 {
-    points = [];         
-
-    colors = [];
-
-    create_cube();
-
     var canvas = $( "#gl-canvas" );
-
     gl = WebGLUtils.setupWebGL( canvas[0] );
     if ( !gl ) { alert( "WebGL isn't available" ); }
+    
+    points = [];         
+    colors = [];
+    create();
 
-    //  Configure WebGL
-
+   
     gl.viewport( 0, 0, canvas[0].width, canvas[0].height );
     gl.clearColor( 1.0, 1.0, 1.0, 1.0 );
 
     gl.enable(gl.DEPTH_TEST);
 
-    //  Load shaders and initialize attribute buffers
 
     var program = initShaders( gl, "vertex-shader", "fragment-shader" );
     gl.useProgram( program );
@@ -64,13 +70,9 @@ window.onload = function init()
     gl.vertexAttribPointer( vColor, 4, gl.FLOAT, false, 0, 0 );
     gl.enableVertexAttribArray( vColor );
 
-    // Load the data into the GPU
-
     vBuffers[nObj] = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, vBuffers[nObj] );
     gl.bufferData( gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW );
-
-    // Associate out shader variables with our data buffer
 
     vPosition = gl.getAttribLocation( program, "vPosition" );
     gl.vertexAttribPointer( vPosition, 3, gl.FLOAT, false, 0, 0 );
@@ -106,42 +108,36 @@ window.onload = function init()
 };
 
 
-
-
-function square_vertices() {
-  return [
-    vec3(-r, -r,  r),
-    vec3(-r,  r,  r),
-    vec3( r,  r,  r),
-    vec3( r, -r,  r),
-    vec3(-r, -r, -r),
-    vec3(-r,  r, -r),
-    vec3( r,  r, -r),
-    vec3( r, -r, -r),
-  ];
+function canvas_to_screen(x, y, w, h){
+    return vec2(2*x/w-1, 2*(h-y)/h-1);
 }
 
-function square_vertic3s() {
-    var t = (1.0 + Math.sqrt(5.0)) / 2.0;
-    return [
-      vec3(  -r, r*t,    0),
-      vec3(   r, r*t,    0),
-      vec3(  -r,-r*t,    0),
-      vec3(   r,-r*t,    0),
-      vec3(   0,  -r,  r*t),
-      vec3(   0,   r,  r*t),
-      vec3(   0,  -r, -r*t),
-      vec3(   0,   r, -r*t),
-      vec3( r*t,   0,   -r),
-      vec3( r*t,   0,    r),
-      vec3(-r*t,   0,   -r),
-      vec3(-r*t,   0,    r)
-    ];
+
+function create_new_object(){
+    nObj++;
+    points = [];         
+    colors = [];
+    create();
+    cBuffers[nObj] = gl.createBuffer();
+    gl.bindBuffer( gl.ARRAY_BUFFER, cBuffers[nObj] );
+    gl.bufferData( gl.ARRAY_BUFFER, flatten(colors), gl.STATIC_DRAW );
+    vBuffers[nObj] = gl.createBuffer();
+    gl.bindBuffer( gl.ARRAY_BUFFER, vBuffers[nObj] );
+    gl.bufferData( gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW );
+    theta[nObj] = [Math.random()*360, Math.random()*360, Math.random()*360];
+    translation[nObj] = (nObj == 0) ? [0, 0, 0, 0] : translation[nObj-1];
 }
+
+function create(){
+    (modelIndex == 0) ? create_cube() : (modelIndex == 1) ? create_sphere() : create_cylinder();
+    modelIndex = (modelIndex + 1) % N_MODELS;
+}
+
+// Cube Generation
 
 function create_cube(){
 
-  vertices = square_vertices();
+  vertices = cube_vertices();
   tri_quad( 1, 0, 3, 2 );
   tri_quad( 2, 3, 7, 6 );
   tri_quad( 3, 0, 4, 7 );
@@ -158,9 +154,44 @@ function create_cube(){
   b[nObj] = points.length;
 }
 
-function create_cub3()
+function cube_vertices() {
+  return [
+    vec3(-r, -r,  r),
+    vec3(-r,  r,  r),
+    vec3( r,  r,  r),
+    vec3( r, -r,  r),
+    vec3(-r, -r, -r),
+    vec3(-r,  r, -r),
+    vec3( r,  r, -r),
+    vec3( r, -r, -r),
+  ];
+}
+
+function tri_quad(i, j, k, l){
+
+  var indices = [i, j, k, i, k, l];
+
+  for ( var i = 0; i < indices.length; ++i){
+    points.push( vertices[indices[i]] );
+    colors.push(vertex_colors[indices[i]] );
+  }
+}
+
+function line_quad(i, j, k, l){
+
+  var indices = [i, j, j, k, k, l, l, i];
+
+  for ( var i = 0; i < indices.length; ++i){
+    points.push( vertices[indices[i]] );
+    colors.push([ 0.0, 0.0, 0.0, 1.0 ]);
+  }
+}
+
+// Sphere Creation
+
+function create_sphere()
 {
-    vertices = square_vertic3s();
+    vertices = sphere_vertices();
 
     var indices = [
            0, 11,  5,  0,  5,  1,  0,  1,  7,  0,  7, 10,  0, 10, 11,
@@ -169,7 +200,7 @@ function create_cub3()
            4,  9,  5,  2,  4, 11,  6,  2, 10,  8,  6,  7,  9,  8,  1
         ];
 
-    var count = 3;
+    var count = 2;
     for(var i = 0; i < indices.length; i += 3){
       divideTriangle(
               vertices[indices[i]], 
@@ -191,14 +222,32 @@ function create_cub3()
     b[nObj] = points.length;
 }
 
+function sphere_vertices() {
+    var t = (1.0 + Math.sqrt(5.0)) / 2.0;
+    return [
+      vec3(  -r, r*t,    0),
+      vec3(   r, r*t,    0),
+      vec3(  -r,-r*t,    0),
+      vec3(   r,-r*t,    0),
+      vec3(   0,  -r,  r*t),
+      vec3(   0,   r,  r*t),
+      vec3(   0,  -r, -r*t),
+      vec3(   0,   r, -r*t),
+      vec3( r*t,   0,   -r),
+      vec3( r*t,   0,    r),
+      vec3(-r*t,   0,   -r),
+      vec3(-r*t,   0,    r)
+    ];
+}
+
 function divideTriangle( a, b, c, count, primatives)
 {
     if ( count == 0 ) {
         if(primatives === gl.TRIANGLES){
-          triangl3( a, b, c );
+          sphere_tri( a, b, c );
         }
         else if(primatives === gl.LINES){
-          lin3( a, b, c );
+          sphere_line( a, b, c );
         }
     }
     else {
@@ -215,63 +264,147 @@ function divideTriangle( a, b, c, count, primatives)
     }
 }
 
-function tri_quad(a, b, c, d){// indices
-
-  var indices = [a, b, c, a, c, d];
-
-  for ( var i = 0; i < indices.length; ++i){
-    points.push( vertices[indices[i]] );
-    colors.push(vertex_colors[indices[i]] );
-  }
-}
-
-function line_quad(a, b, c, d){// indices
-
-  var indices = [a, b, b, c, c, d, d, a];
-
-  for ( var i = 0; i < indices.length; ++i){
-    points.push( vertices[indices[i]] );
-    colors.push([ 0.0, 0.0, 0.0, 1.0 ]);
-  }
-}
-
-function triangl3(a, b, c){// vertices
+function sphere_tri(a, b, c){
     var v = [a, b, c];
     for ( var i = 0; i < v.length; ++i){
-      points.push( v[i] );
-      colors.push([ 1.0, 0.0, 0.0, 1.0 ]);       
+      v[i] = normalize(v[i], false);
+      colors.push(  [ 0.5*(1+v[i][0]), 0.5*(1+v[i][1]), 0.5*(1+v[i][2]), 1.0 ]  );
+      v[i] = scale(1.6*r, v[i]);
+      points.push( v[i] );           
     }   
 }
 
-function lin3(a,b,c)
+function sphere_line(a,b,c)
 {
     var v = [a,b,b,c,c,a];
     for ( var i = 0; i < v.length; ++i){
+        v[i] = scale(1.6*r, normalize(v[i], false));
         points.push( v[i]) ;
         colors.push([ 0.0, 0.0, 0.0, 1.0 ])
     }
 }
 
-function canvas_to_screen(x, y, w, h){
-    return vec2(2*x/w-1, 2*(h-y)/h-1);
+// Cylinder Creation
+
+function create_cylinder(){
+    vertices = cylinder_vertices();
+    
+    var triIndices = [
+         0,  1,  2,  0,  2,  3,  0,  3,  4,  0,  4,  5,  
+         0,  5,  6,  0,  6,  7,  0,  7,  8,  0,  8,  9,
+         0,  9, 10,  0, 10, 11,  0, 11, 12,  0, 12, 13,
+         0, 13, 14,  0, 14, 15,  0, 15, 16,  0, 16,  1,
+        17, 18, 19, 17, 19, 20, 17, 20, 21, 17, 21, 22,
+        17, 22, 23, 17, 23, 24, 17, 24, 25, 17, 25, 26,
+        17, 26, 27, 17, 27, 28, 17, 28, 29, 17, 29, 30,
+        17, 30, 31, 17, 31, 32, 17, 32, 33, 17, 33, 18
+    ];
+    
+    var quadIndices = [
+         1,  2, 18, 19,  2,  3, 19, 20,  3,  4, 20, 21,
+         4,  5, 21, 22,  5,  6, 22, 23,  6,  7, 23, 24,
+         7,  8, 24, 25,  8,  9, 25, 26,  9, 10, 26, 27,
+        10, 11, 27, 28, 11, 12, 28, 29, 12, 13, 29, 30,
+        13, 14, 30, 31, 14, 15, 31, 32, 15, 16, 32, 33,
+        16,  1, 33, 18
+    ]; 
+    
+    for(var i = 0; i < triIndices.length; i += 3){
+        tri_tri(triIndices[i], triIndices[i+1], triIndices[i+2]);
+    }
+    for(var i = 0; i < quadIndices.length; i += 4){
+        tri_quad2(quadIndices[i], quadIndices[i+1], quadIndices[i+2], quadIndices[i+3]);
+    }
+    a[nObj] = points.length;
+    for(var i = 0; i < triIndices.length; i += 3){
+        line_tri(triIndices[i], triIndices[i+1], triIndices[i+2]);
+    }
+    for(var i = 0; i < quadIndices.length; i += 4){
+        line_quad2(quadIndices[i], quadIndices[i+1], quadIndices[i+2], quadIndices[i+3]);
+    }
+    b[nObj] = points.length;
 }
 
-function create_new_object()
-{
-    nObj++;
-    points = [];         
+function tri_tri(i, j, k){
 
-    colors = [];
-    create_cub3();
-    cBuffers[nObj] = gl.createBuffer();
-    gl.bindBuffer( gl.ARRAY_BUFFER, cBuffers[nObj] );
-    gl.bufferData( gl.ARRAY_BUFFER, flatten(colors), gl.STATIC_DRAW );
-    vBuffers[nObj] = gl.createBuffer();
-    gl.bindBuffer( gl.ARRAY_BUFFER, vBuffers[nObj] );
-    gl.bufferData( gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW );
-    theta[nObj] = [Math.random()*360, Math.random()*360, Math.random()*360];
-    translation[nObj] = translation[nObj-1];
+  var indices = [i, j, k];
+
+  for ( var i = 0; i < indices.length; ++i){
+    points.push( vertices[indices[i]] );
+    colors.push( RED );
+  }
 }
+
+function tri_quad2(i, j, k, l){
+  
+  var indices = [i, j, k, j, l, k];
+
+  for ( var i = 0; i < indices.length; ++i){
+    points.push( vertices[indices[i]] );
+    colors.push( RED );
+  }
+}
+
+function line_tri(i, j, k){
+
+  var indices = [i, j, j, k, k, i];
+
+  for ( var i = 0; i < indices.length; ++i){
+    points.push( vertices[indices[i]] );
+    colors.push( BLACK );
+  }
+}
+
+function line_quad2(i, j, k, l){
+  
+  var indices = [i, j, j, l, l, k, k, i];
+
+  for ( var i = 0; i < indices.length; ++i){
+    points.push( vertices[indices[i]] );
+    colors.push( BLACK );
+  }
+}
+
+function cylinder_vertices() {
+    return [
+      vec3(  0.00000*r,  0.00000*r,  1.00000*r ),
+      vec3(  0.00000*r,  1.00000*r,  1.00000*r ),
+      vec3(  0.38268*r,  0.92388*r,  1.00000*r ),
+      vec3(  0.70711*r,  0.70711*r,  1.00000*r ),
+      vec3(  0.92388*r,  0.38268*r,  1.00000*r ),
+      vec3(  1.00000*r,  0.00000*r,  1.00000*r ),
+      vec3(  0.92388*r, -0.38268*r,  1.00000*r ),
+      vec3(  0.70711*r, -0.70711*r,  1.00000*r ),
+      vec3(  0.38268*r, -0.92388*r,  1.00000*r ),
+      vec3(  0.00000*r, -1.00000*r,  1.00000*r ),
+      vec3( -0.38268*r, -0.92388*r,  1.00000*r ),
+      vec3( -0.70711*r, -0.70711*r,  1.00000*r ),
+      vec3( -0.92388*r, -0.38268*r,  1.00000*r ),
+      vec3( -1.00000*r,  0.00000*r,  1.00000*r ),
+      vec3( -0.92388*r,  0.38268*r,  1.00000*r ),
+      vec3( -0.70711*r,  0.70711*r,  1.00000*r ),
+      vec3( -0.38268*r,  0.92388*r,  1.00000*r ),
+      vec3(  0.00000*r,  0.00000*r, -1.00000*r ),
+      vec3(  0.00000*r,  1.00000*r, -1.00000*r ),
+      vec3(  0.38268*r,  0.92388*r, -1.00000*r ),
+      vec3(  0.70711*r,  0.70711*r, -1.00000*r ),
+      vec3(  0.92388*r,  0.38268*r, -1.00000*r ),
+      vec3(  1.00000*r,  0.00000*r, -1.00000*r ),
+      vec3(  0.92388*r, -0.38268*r, -1.00000*r ),
+      vec3(  0.70711*r, -0.70711*r, -1.00000*r ),
+      vec3(  0.38268*r, -0.92388*r, -1.00000*r ),
+      vec3(  0.00000*r, -1.00000*r, -1.00000*r ),
+      vec3( -0.38268*r, -0.92388*r, -1.00000*r ),
+      vec3( -0.70711*r, -0.70711*r, -1.00000*r ),
+      vec3( -0.92388*r, -0.38268*r, -1.00000*r ),
+      vec3( -1.00000*r,  0.00000*r, -1.00000*r ),
+      vec3( -0.92388*r,  0.38268*r, -1.00000*r ),
+      vec3( -0.70711*r,  0.70711*r, -1.00000*r ),
+      vec3( -0.38268*r,  0.92388*r, -1.00000*r )
+  ];
+}
+
+// Render
 
 function render() {
     gl.clear( gl.COLOR_BUFFER_BIT );
