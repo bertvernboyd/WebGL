@@ -56,6 +56,7 @@ window.onload = function init()
     colors = [];
     create();
     
+    
     gl.viewport( 0, 0, canvas[0].width, canvas[0].height );
     gl.clearColor( 1.0, 1.0, 1.0, 1.0 );
 
@@ -170,7 +171,6 @@ function replace_object(){
     vBuffers[nObj] = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, vBuffers[nObj] );
     gl.bufferData( gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW );
-    theta[nObj] = [Math.random()*360, Math.random()*360, Math.random()*360];
     theta[nObj] = theta[nObj];
     translation[nObj] = (nObj == 0) ? [0, 0, 0, 0] : translation[nObj];
     scalef[nObj] = scalef[nObj];
@@ -236,101 +236,172 @@ function line_quad(i, j, k, l){
 
 // Sphere Creation
 
-function create_sphere()
-{
+function create_sphere(){
     vertices = sphere_vertices();
 
     var indices = [
-           0, 11,  5,  0,  5,  1,  0,  1,  7,  0,  7, 10,  0, 10, 11,
-           1,  5,  9,  5, 11,  4, 11, 10,  2, 10,  7,  6,  7,  1,  8,
-           3,  9,  4,  3,  4,  2,  3,  2,  6,  3,  6,  8,  3,  8,  9,
-           4,  9,  5,  2,  4, 11,  6,  2, 10,  8,  6,  7,  9,  8,  1
+           0,  1,  2, 
+           0,  2,  3, 
+           0,  3,  4, 
+           0,  4,  5, 
+           0,  5,  1,
+           1,  6,  2,
+           2,  7,  3,
+           3,  8,  4,
+           4,  9,  5,
+           5, 10,  1,
+           1, 11,  6,
+           2,  6, 12,
+           2, 12,  7,
+           3,  7, 13,
+           3, 13,  8,
+           4,  8, 14,
+           4, 14,  9,
+           5,  9, 15,
+           5, 15, 10,
+           1, 10, 11,
+          11, 16,  6,
+          16, 17,  6,
+           6, 17, 12,
+          12, 17, 18,
+          12, 18,  7,
+          18,  7, 19,
+           7, 19, 13,
+          13, 19, 20,
+          19, 20,  8, 
+          20,  8, 21,
+           8, 21, 14,
+          21, 14, 22,
+          14, 22,  9,
+          22,  9, 23,
+           9, 23, 15,
+          23, 15, 24,
+          15, 24, 10,
+          24, 10, 25,
+          10, 25, 11,
+          25, 11, 16, //
+          16, 26, 17,
+          18, 27, 19,       
+          20, 28, 21,
+          22, 29, 23,
+          24, 30, 25,
+          30, 31, 25,
+          25, 31, 16,
+          31, 26, 16,
+          26, 32, 17,
+          17, 32, 18,
+          32, 27, 18,
+          27, 33, 19,
+          19, 33, 20,
+          33, 28, 20,
+          28, 34, 21,
+          21, 34, 22,
+          34, 29, 22,
+          29, 35, 23,
+          23, 35, 24,
+          35, 30, 24,
+          31, 36, 26,
+          26, 36, 32,
+          36, 32, 37,
+          32, 37, 27,
+          37, 27, 33,
+          37, 33, 38,
+          33, 38, 28,
+          38, 34, 28, 
+          38, 39, 34,  
+          34, 39, 29,
+          39, 35, 29, 
+          39, 40, 35,
+          35, 40, 30, 
+          40, 31, 30,
+          40, 36, 31,      
+          36, 41, 37,
+          37, 41, 38,
+          38, 41, 39,
+          39, 41, 40,
+          40, 41, 36          
         ];
-
-    var count = 1;
+        
     for(var i = 0; i < indices.length; i += 3){
-      divideTriangle(
-              vertices[indices[i]], 
-              vertices[indices[i+1]], 
-              vertices[indices[i+2]], 
-              count, gl.TRIANGLES);
+        tri_tri(indices[i], indices[i+1], indices[i+2]);
     }
-
     a[nObj] = points.length;
-    
     for(var i = 0; i < indices.length; i += 3){
-      divideTriangle(
-              vertices[indices[i]], 
-              vertices[indices[i+1]], 
-              vertices[indices[i+2]], 
-              count, gl.LINES);
+        line_tri(indices[i], indices[i+1], indices[i+2]);
     }
-
     b[nObj] = points.length;
 }
 
 function sphere_vertices() {
-    var t = (1.0 + Math.sqrt(5.0)) / 2.0;
     return [
-      vec3(  -r, r*t,    0),
-      vec3(   r, r*t,    0),
-      vec3(  -r,-r*t,    0),
-      vec3(   r,-r*t,    0),
-      vec3(   0,  -r,  r*t),
-      vec3(   0,   r,  r*t),
-      vec3(   0,  -r, -r*t),
-      vec3(   0,   r, -r*t),
-      vec3( r*t,   0,   -r),
-      vec3( r*t,   0,    r),
-      vec3(-r*t,   0,   -r),
-      vec3(-r*t,   0,    r)
-    ];
+      vec3(  0.00000*r,  0.00000*r,  1.00000*r ), //  0
+      vec3(  0.52573*r,  0.00000*r,  0.85065*r ), //  1
+      vec3(  0.16246*r,  0.50000*r,  0.85065*r ), //  2
+      vec3( -0.42532*r,  0.30901*r,  0.85065*r ), //  3
+      vec3( -0.42532*r, -0.30901*r,  0.85065*r ), //  4
+      vec3(  0.16246*r, -0.50000*r,  0.85065*r ), //  5
+      vec3(  0.68819*r,  0.50000*r,  0.52574*r ), //  6
+      vec3( -0.26287*r,  0.80901*r,  0.52574*r ), //  7
+      vec3( -0.85065*r,  0.00000*r,  0.52574*r ), //  8
+      vec3( -0.26287*r, -0.80901*r,  0.52574*r ), //  9
+      vec3(  0.68819*r, -0.50000*r,  0.52574*r ), // 10
+      vec3(  0.89443*r,  0.00000*r,  0.44722*r ), // 11
+      vec3(  0.27639*r,  0.85065*r,  0.44722*r ), // 12
+      vec3( -0.72361*r,  0.52573*r,  0.44722*r ), // 13
+      vec3( -0.72361*r, -0.52573*r,  0.44722*r ), // 14
+      vec3(  0.27639*r, -0.85065*r,  0.44722*r ), // 15
+      vec3(  0.95106*r,  0.30901*r,  0.00000*r ), // 16
+      vec3(  0.58779*r,  0.80902*r,  0.00000*r ), // 17
+      vec3(  0.00000*r,  1.00000*r,  0.00000*r ), // 18
+      vec3( -0.58779*r,  0.80902*r,  0.00000*r ), // 19
+      vec3( -0.95106*r,  0.30901*r,  0.00000*r ), // 20
+      vec3( -0.95106*r, -0.30901*r,  0.00000*r ), // 21
+      vec3( -0.58779*r, -0.80902*r,  0.00000*r ), // 22
+      vec3(  0.00000*r, -1.00000*r,  0.00000*r ), // 23
+      vec3(  0.58779*r, -0.80902*r,  0.00000*r ), // 24
+      vec3(  0.95106*r, -0.30901*r,  0.00000*r ), // 25
+      vec3(  0.72361*r,  0.52573*r, -0.44722*r ), // 26
+      vec3( -0.27639*r,  0.85065*r, -0.44722*r ), // 27
+      vec3( -0.89443*r,  0.00000*r, -0.44722*r ), // 28
+      vec3( -0.27639*r, -0.85065*r, -0.44722*r ), // 29 
+      vec3(  0.72361*r, -0.52573*r, -0.44722*r ), // 30
+      vec3(  0.85065*r,  0.00000*r, -0.52574*r ), // 31
+      vec3(  0.26287*r,  0.80901*r, -0.52574*r ), // 32
+      vec3( -0.68819*r,  0.50000*r, -0.52574*r ), // 33
+      vec3( -0.68819*r, -0.50000*r, -0.52574*r ), // 34
+      vec3(  0.26287*r, -0.80901*r, -0.52574*r ), // 35
+      vec3(  0.42532*r,  0.30901*r, -0.85065*r ), // 36
+      vec3( -0.16246*r,  0.50000*r, -0.85065*r ), // 37
+      vec3( -0.52573*r,  0.00000*r, -0.85065*r ), // 38
+      vec3( -0.16246*r, -0.50000*r, -0.85065*r ), // 39
+      vec3(  0.42532*r, -0.30901*r, -0.85065*r ), // 40
+      vec3(  0.00000*r,  0.00000*r, -1.00000*r )  // 41
+      
+      
+      
+
+  ];
 }
 
-function divideTriangle( a, b, c, count, primatives)
-{
-    if ( count == 0 ) {
-        if(primatives === gl.TRIANGLES){
-          sphere_tri( a, b, c );
-        }
-        else if(primatives === gl.LINES){
-          sphere_line( a, b, c );
-        }
-    }
-    else {
-        var ab = mix( a, b, 0.5 );
-        var ac = mix( a, c, 0.5 );
-        var bc = mix( b, c, 0.5 );
+function tri_tri(i, j, k){
 
-        --count;
+  var indices = [i, j, k];
 
-        divideTriangle( a, ab, ac, count, primatives );
-        divideTriangle( c, ac, bc, count, primatives );
-        divideTriangle( b, bc, ab, count, primatives );
-        divideTriangle( ab, ac, bc, count, primatives );
-    }
+  for ( var i = 0; i < indices.length; ++i){
+    points.push( vertices[indices[i]] );
+    colors.push( RED );
+  }
 }
 
-function sphere_tri(a, b, c){
-    var v = [a, b, c];
-    for ( var i = 0; i < v.length; ++i){
-      v[i] = normalize(v[i], false);
-      colors.push(  [ 0.5*(1+v[i][0]), 0.5*(1+v[i][1]), 0.5*(1+v[i][2]), 1.0 ]  );
-      v[i] = scale(1.6*r, v[i]);
-      points.push( v[i] );           
-    }   
-}
+function line_tri(i, j, k){
 
-function sphere_line(a,b,c)
-{
-    var v = [a,b,b,c,c,a];
-    for ( var i = 0; i < v.length; ++i){
-        v[i] = scale(1.6*r, normalize(v[i], false));
-        points.push( v[i]) ;
-        colors.push([ 0.0, 0.0, 0.0, 1.0 ])
-    }
-}
+  var indices = [i, j, j, k, k, i];
 
+  for ( var i = 0; i < indices.length; ++i){
+    points.push( vertices[indices[i]] );
+    colors.push( BLACK );
+  }
+}
 // Cylinder Creation
 
 function create_cylinder(){
@@ -372,46 +443,6 @@ function create_cylinder(){
     b[nObj] = points.length;
 }
 
-function tri_tri(i, j, k){
-
-  var indices = [i, j, k];
-
-  for ( var i = 0; i < indices.length; ++i){
-    points.push( vertices[indices[i]] );
-    colors.push( RED );
-  }
-}
-
-function tri_quad2(i, j, k, l){
-  
-  var indices = [i, j, k, j, l, k];
-
-  for ( var i = 0; i < indices.length; ++i){
-    points.push( vertices[indices[i]] );
-    colors.push( RED );
-  }
-}
-
-function line_tri(i, j, k){
-
-  var indices = [i, j, j, k, k, i];
-
-  for ( var i = 0; i < indices.length; ++i){
-    points.push( vertices[indices[i]] );
-    colors.push( BLACK );
-  }
-}
-
-function line_quad2(i, j, k, l){
-  
-  var indices = [i, j, j, l, l, k, k, i];
-
-  for ( var i = 0; i < indices.length; ++i){
-    points.push( vertices[indices[i]] );
-    colors.push( BLACK );
-  }
-}
-
 function cylinder_vertices() {
     return [
       vec3(  0.00000*r,  0.00000*r,  1.00000*r ),
@@ -449,6 +480,29 @@ function cylinder_vertices() {
       vec3( -0.70711*r,  0.70711*r, -1.00000*r ),
       vec3( -0.38268*r,  0.92388*r, -1.00000*r )
   ];
+}
+
+
+function tri_quad2(i, j, k, l){
+  
+  var indices = [i, j, k, j, l, k];
+
+  for ( var i = 0; i < indices.length; ++i){
+    points.push( vertices[indices[i]] );
+    colors.push( RED );
+  }
+}
+
+
+
+function line_quad2(i, j, k, l){
+  
+  var indices = [i, j, j, l, l, k, k, i];
+
+  for ( var i = 0; i < indices.length; ++i){
+    points.push( vertices[indices[i]] );
+    colors.push( BLACK );
+  }
 }
 
 // Render
