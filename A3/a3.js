@@ -35,12 +35,16 @@ var nObj = 0;
 var modelIndex = 0;
 var N_MODELS = 3;
 
-var theta = [[ Math.random()*360, Math.random()*360, Math.random()*360 ]];
+var theta = [[ 0, 0, 0 ]];
 var thetaLoc;
 
 var translation = [[0, 0, 0, 0]];
 var translationLoc;
 
+var scalef = [[1.0, 1.0, 1.0]];
+var scaleLoc;
+
+var shape = "cube";
 
 window.onload = function init()
 {
@@ -51,13 +55,11 @@ window.onload = function init()
     points = [];         
     colors = [];
     create();
-
-   
+    
     gl.viewport( 0, 0, canvas[0].width, canvas[0].height );
     gl.clearColor( 1.0, 1.0, 1.0, 1.0 );
 
     gl.enable(gl.DEPTH_TEST);
-
 
     var program = initShaders( gl, "vertex-shader", "fragment-shader" );
     gl.useProgram( program );
@@ -80,6 +82,7 @@ window.onload = function init()
 
     thetaLoc = gl.getUniformLocation(program, "theta");
     translationLoc = gl.getUniformLocation(program, "translation");
+    scaleLoc = gl.getUniformLocation(program, "scale");
 
     canvas.mousedown(function(event) {
       switch (event.which) {
@@ -101,9 +104,37 @@ window.onload = function init()
 
     });
     canvas.mouseout(function(event){
-        translation[nObj] = [0, 0, 0, 0];
+        //translation[nObj] = [0, 0, 0, 0];
     });
-
+    
+    $("#cube").change(function() {
+        shape = "cube";
+        replace_object();
+    })
+    $("#sphere").change(function() {
+        shape = "sphere";
+        replace_object();
+    })
+    $("#cylinder").change(function() {
+        shape = "cylinder";
+        replace_object();
+    })
+    $("#scaler").change(function() {
+        var s = event.srcElement.value;
+        scalef[nObj] = [s, s, s];
+    })
+    $("#rx").change(function() {
+        var r = event.srcElement.value;
+        theta[nObj] = [r, theta[nObj][1], theta[nObj][2]];
+    })
+    $("#ry").change(function() {
+        var r = event.srcElement.value;
+        theta[nObj] = [theta[nObj][0], r, theta[nObj][2]];
+    })    
+    $("#rz").change(function() {
+        var r = event.srcElement.value;
+        theta[nObj] = [theta[nObj][0], theta[nObj][1], r];
+    })
     render();
 };
 
@@ -124,13 +155,29 @@ function create_new_object(){
     vBuffers[nObj] = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, vBuffers[nObj] );
     gl.bufferData( gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW );
-    theta[nObj] = [Math.random()*360, Math.random()*360, Math.random()*360];
+    theta[nObj] = theta[nObj-1];
     translation[nObj] = (nObj == 0) ? [0, 0, 0, 0] : translation[nObj-1];
+    scalef[nObj] = scalef[nObj-1];
+}
+
+function replace_object(){
+    points = [];         
+    colors = [];
+    create();
+    cBuffers[nObj] = gl.createBuffer();
+    gl.bindBuffer( gl.ARRAY_BUFFER, cBuffers[nObj] );
+    gl.bufferData( gl.ARRAY_BUFFER, flatten(colors), gl.STATIC_DRAW );
+    vBuffers[nObj] = gl.createBuffer();
+    gl.bindBuffer( gl.ARRAY_BUFFER, vBuffers[nObj] );
+    gl.bufferData( gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW );
+    theta[nObj] = [Math.random()*360, Math.random()*360, Math.random()*360];
+    theta[nObj] = theta[nObj];
+    translation[nObj] = (nObj == 0) ? [0, 0, 0, 0] : translation[nObj];
+    scalef[nObj] = scalef[nObj];
 }
 
 function create(){
-    (modelIndex == 0) ? create_cube() : (modelIndex == 1) ? create_sphere() : create_cylinder();
-    modelIndex = (modelIndex + 1) % N_MODELS;
+    (shape == "cube") ? create_cube() : (shape == "sphere") ? create_sphere() : create_cylinder();
 }
 
 // Cube Generation
@@ -200,7 +247,7 @@ function create_sphere()
            4,  9,  5,  2,  4, 11,  6,  2, 10,  8,  6,  7,  9,  8,  1
         ];
 
-    var count = 2;
+    var count = 1;
     for(var i = 0; i < indices.length; i += 3){
       divideTriangle(
               vertices[indices[i]], 
@@ -417,6 +464,7 @@ function render() {
       
       gl.uniform3fv(thetaLoc, theta[i]);
       gl.uniform4fv(translationLoc, translation[i]);
+      gl.uniform3fv(scaleLoc, scalef[i])
       gl.drawArrays( gl.TRIANGLES, 0, a[i] );
       gl.drawArrays( gl.LINES, a[i], b[i] - a[i] );
     }
