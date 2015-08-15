@@ -1,0 +1,141 @@
+body {
+  margin: 0px;
+  padding: 0px;
+  background-color: #111111;
+  color: #EEEEEE;
+}
+
+.col{
+  display: inline-block;
+  position: absolute;
+}
+
+#right{
+  left: 896px;
+  top: 144px;
+}
+
+#sliders{
+  top: 196px;
+  left: 6px;
+}
+
+#viewed{
+  top: 512px;
+  left: 32px;
+}
+
+#colors{
+  font-size: 0px;  /* remove margins in inline block */
+  position: relative;
+  left: 144px;
+}
+
+.color_div{
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+}
+
+.white{
+  background-color: #FFFFFF;
+}
+
+.gray{
+  background-color: #7F7F7F;
+}
+
+.red{
+  background-color: #FF0000;
+}
+
+.orange{
+   background-color: #FF7F00;
+}
+
+.yellow{
+  background-color: #FFFF00;
+}
+
+.light_green{
+  background-color: #7FFF00;
+}
+
+.green{
+  background-color: #00FF00;
+}
+
+.teal{
+  background-color: #00FF7F;
+}
+
+.cyan{
+  background-color: #00FFFF;
+}
+
+.light_blue{
+  background-color: #007FFF;
+}
+
+.blue{
+  background-color: #0000FF;
+}
+
+.violet{
+  background-color: #7F00FF;
+}
+
+.magenta{
+  background-color: #FF00FF;
+}
+
+.pink{
+  background-color: #FF007F;
+}
+
+.rainbow{
+   display: inline-block;
+   width: 32px;
+   height: 32px;
+   background-image: url("assets/rainbow.png");
+}
+
+.shape-selector input{
+    margin:0;padding:0;
+    -webkit-appearance:none;
+       -moz-appearance:none;
+            appearance:none;
+}
+.cube{background-image:url(assets/cube.png);}
+.sphere{background-image:url(assets/sphere.png);}
+.cylinder{background-image:url(assets/cylinder.png);}
+
+.shape-selector input:active +.model-shape{opacity: .9;}
+.shape-selector input:checked +.model-shape{
+    -webkit-filter: none;
+       -moz-filter: none;
+            filter: none;
+}
+.model-shape{
+    cursor:pointer;
+    background-size:contain;
+    background-repeat:no-repeat;
+    display:inline-block;
+    width:96px;height:96px;
+    -webkit-transition: all 100ms ease-in;
+       -moz-transition: all 100ms ease-in;
+            transition: all 100ms ease-in;
+    -webkit-filter: brightness(1.8) grayscale(1) opacity(.7);
+       -moz-filter: brightness(1.8) grayscale(1) opacity(.7);
+            filter: brightness(1.8) grayscale(1) opacity(.7);
+}
+.model-shape:hover{
+    -webkit-filter: brightness(1.2) grayscale(.5) opacity(.9);
+       -moz-filter: brightness(1.2) grayscale(.5) opacity(.9);
+            filter: brightness(1.2) grayscale(.5) opacity(.9);
+}
+
+/* Extras */
+a:visited{color:#888}
+a{color:#444;text-decoration:none;}
+p{margin-bottom:.3em;}
