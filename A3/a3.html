@@ -70,37 +70,55 @@ main()
 </head>   
 
 <body>
-  <canvas id="gl-canvas" width="768" height="768">
-    Oops ... your browser doesn't support the HTML5 canvas element
-  </canvas>
-  <br/>
-  <div id="colors">
-      <div style=
-      <div class="color_div white"></div>
-      <div class="color_div gray"></div>
-      <div class="color_div red"></div>
-      <div class="color_div orange"></div>
-      <div class="color_div yellow"></div>
-      <div class="color_div light_green"></div>
-      <div class="color_div green"></div>
-      <div class="color_div teal"></div>
-      <div class="color_div cyan"></div>
-      <div class="color_div light_blue"></div>  
-      <div class="color_div blue"></div>
-      <div class="color_div violet"></div>
-      <div class="color_div magenta"></div>
-      <div class="color_div pink"></div>
-  </div>
-  <input id="cube" type="radio" name="model_radio" checked="checked"/> cube
-  <input id="sphere" type="radio" name="model_radio"/> sphere
-  <input id="cylinder" type="radio" name="model_radio"/> cylinder
-  <br/>
-  scale:<input id="scaler" type="range" min="0.1" max="5" step="0.1" value="1" />
-  <br/>
-  rx:<input id="rx" type="range" min="0" max="360" step="1" value="45" />
-  ry:<input id="ry" type="range" min="0" max="360" step="1" value="45" />
-  rz:<input id="rz" type="range" min="0" max="360" step="1" value="30" />
-  <br/>
+  <div id="main">
+    <div class="col">
+      <canvas id="gl-canvas" width="768" height="768">
+        Oops ... your browser doesn't support the HTML5 canvas element
+      </canvas>
+      <br/>
+      <div id="colors">
+          <div class="color_div white"></div>
+          <div class="color_div gray"></div>
+          <div class="color_div red"></div>
+          <div class="color_div orange"></div>
+          <div class="color_div yellow"></div>
+          <div class="color_div light_green"></div>
+          <div class="color_div green"></div>
+          <div class="color_div teal"></div>
+          <div class="color_div cyan"></div>
+          <div class="color_div light_blue"></div>  
+          <div class="color_div blue"></div>
+          <div class="color_div violet"></div>
+          <div class="color_div magenta"></div>
+          <div class="color_div pink"></div>
+          <div class="rainbow"></div>
+      </div>
+    </div>
+    <div id="right" class="col">
+ 
+        <div class="shape-selector">
+                  <input id="cube" type="radio" name="model" value="cube" checked="checked"/> 
+                  <label class="model-shape cube" for="cube"></label>
+                  <input id="sphere" type="radio" name="model" value="sphere"/> 
+                  <label class="model-shape sphere" for="sphere"></label>
+                  <input id="cylinder" type="radio" name="model" value="cylinder"/> 
+                  <label class="model-shape cylinder" for="cylinder"></label>
+        </div>
 
+      <div id="sliders" class="col">
+
+          <input id="scaler" class="slider" type="range" min="0.1" max="5" step="0.1" value="1" />  scale factor<br/><br/>
+          <input id="rx" class="slider" type="range" min="0" max="360" step="1" value="45" /> rotation about x-axis<br/>
+          <input id="ry" class="slider" type="range" min="0" max="360" step="1" value="45" /> rotation about y-axis<br/>
+          <input id="rz" class="slider" type="range" min="0" max="360" step="1" value="30" /> rotation about z-axis<br/>
+          <br/>
+      </div>
+      
+      <div id="viewed" class="col">
+           best viewed at 1280x768 or higher
+      </div>
+
+    </div>
+  </div>
 </body>
 </html>

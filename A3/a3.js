@@ -46,6 +46,7 @@ var scalef = [[1.0, 1.0, 1.0]];
 var scaleLoc;
 
 var shape = "cube";
+var rainbow = false;
 
 window.onload = function init()
 {
@@ -111,13 +112,16 @@ window.onload = function init()
     
     $("#cube").change(function() {
         shape = "cube";
+        r = 0.1;
         replace_object();
     })
     $("#sphere").change(function() {
         shape = "sphere";
+        r = 0.13;
         replace_object();
     })
     $("#cylinder").change(function() {
+        r = 0.1;
         shape = "cylinder";
         replace_object();
     })
@@ -138,14 +142,21 @@ window.onload = function init()
         theta[nObj] = [theta[nObj][0], theta[nObj][1], r];
     })
     
-    $(".color_div").mousedown(function(event){
+    $(".color_div").click(function(event){
       var c = $(this).css("background-color");
       var c_vals = c.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
       var r = parseInt(c_vals[1])/255.0;
       var g = parseInt(c_vals[2])/255.0;
       var b = parseInt(c_vals[3])/255.0;
       color = vec4(r, g, b, 1.0);
+      rainbow = false;
       replace_object();
+      
+    });
+    
+    $(".rainbow").click(function(event){
+        rainbow = true;
+        replace_object();
     });
     
     render();
@@ -232,8 +243,11 @@ function tri_quad(i, j, k, l){
 
   for ( var i = 0; i < indices.length; ++i){
     points.push( vertices[indices[i]] );
-    // colors.push(vertex_colors[indices[i]] );
-    colors.push(color);
+    if(rainbow){
+        colors.push(vertex_colors[indices[i]] );   
+    }else{
+        colors.push(color);
+    }
   }
 }
 
@@ -243,7 +257,7 @@ function line_quad(i, j, k, l){
 
   for ( var i = 0; i < indices.length; ++i){
     points.push( vertices[indices[i]] );
-    colors.push([ 0.0, 0.0, 0.0, 1.0 ]);
+    colors.push( BLACK );
   }
 }
 
@@ -399,16 +413,16 @@ function tri_tri(i, j, k){
 
   for ( var i = 0; i < indices.length; ++i){
     points.push( vertices[indices[i]] );
-    colors.push(color);
-    // var c = 0.5;
-    // colors.push( [c*(1.0+vertices[indices[i]][0]/r),
-                  // c*(1.0+vertices[indices[i]][1]/r),
-                  // c*(1.0+vertices[indices[i]][2]/r),
-                  // 1.0] ) ;
-    // colors.push( [c*(1.0+vertices[indices[i]][0]*vertices[indices[i]][0]/(r*r)),
-                  // c*(1.0+vertices[indices[i]][1]*vertices[indices[i]][1]/(r*r)),
-                  // c*(1.0+vertices[indices[i]][2]*vertices[indices[i]][2]/(r*r)),
-                  // 1.0] ) ;
+    if(rainbow){
+        var c = 0.5;
+        colors.push( [c*(1.0+vertices[indices[i]][0]/r),
+                      c*(1.0+vertices[indices[i]][1]/r),
+                      c*(1.0+vertices[indices[i]][2]/r),
+                      1.0] ) ;      
+    }else{
+       colors.push(color);
+    }
+
   }
 }
 
@@ -508,17 +522,16 @@ function tri_quad2(i, j, k, l){
 
   for ( var i = 0; i < indices.length; ++i){
     points.push( vertices[indices[i]] );
-    var c = 0.5;
-    colors.push(color);
-     // colors.push( [c*(1.0+vertices[indices[i]][0]/r),
-                  // c*(1.0+vertices[indices[i]][1]/r),
-                  // c*(1.0+vertices[indices[i]][2]/r),
-                  // 1.0] ) ;
-     // colors.push( [c*(1.0+vertices[indices[i]][0]*vertices[indices[i]][0]/(r*r)),
-                  // c*(1.0+vertices[indices[i]][1]*vertices[indices[i]][1]/(r*r)),
-                  // c*(1.0+vertices[indices[i]][2]*vertices[indices[i]][2]/(r*r)),
-                  // 1.0] ) ;
-    //colors.push( RED );
+    if(rainbow){
+        var c = 0.5;
+        colors.push( [c*(1.0+vertices[indices[i]][0]/r),
+                      c*(1.0+vertices[indices[i]][1]/r),
+                      c*(1.0+vertices[indices[i]][2]/r),
+                      1.0] ) ;
+    }
+    else{
+        colors.push(color);
+    }
   }
 }
 
