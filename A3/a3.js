@@ -10,6 +10,7 @@ var BLUE = [ 0.0, 0.0, 1.0, 1.0 ];
 var MAGENTA = [ 1.0, 0.0, 1.0, 1.0 ];
 var CYAN = [ 0.0, 1.0, 1.0, 1.0 ];
 var WHITE = [ 1.0, 1.0, 1.0, 1.0 ];
+var color = WHITE;
 
 var vertex_colors = [
         BLACK,  // black
@@ -35,7 +36,7 @@ var nObj = 0;
 var modelIndex = 0;
 var N_MODELS = 3;
 
-var theta = [[ 0, 0, 0 ]];
+var theta = [[ 45, 45, 30 ]];
 var thetaLoc;
 
 var translation = [[0, 0, 0, 0]];
@@ -136,6 +137,17 @@ window.onload = function init()
         var r = event.srcElement.value;
         theta[nObj] = [theta[nObj][0], theta[nObj][1], r];
     })
+    
+    $(".color_div").mousedown(function(event){
+      var c = $(this).css("background-color");
+      var c_vals = c.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+      var r = parseInt(c_vals[1])/255.0;
+      var g = parseInt(c_vals[2])/255.0;
+      var b = parseInt(c_vals[3])/255.0;
+      color = vec4(r, g, b, 1.0);
+      replace_object();
+    });
+    
     render();
 };
 
@@ -172,7 +184,7 @@ function replace_object(){
     gl.bindBuffer( gl.ARRAY_BUFFER, vBuffers[nObj] );
     gl.bufferData( gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW );
     theta[nObj] = theta[nObj];
-    translation[nObj] = (nObj == 0) ? [0, 0, 0, 0] : translation[nObj];
+    translation[nObj] = translation[nObj];
     scalef[nObj] = scalef[nObj];
 }
 
@@ -220,7 +232,8 @@ function tri_quad(i, j, k, l){
 
   for ( var i = 0; i < indices.length; ++i){
     points.push( vertices[indices[i]] );
-    colors.push(vertex_colors[indices[i]] );
+    // colors.push(vertex_colors[indices[i]] );
+    colors.push(color);
   }
 }
 
@@ -266,9 +279,9 @@ function create_sphere(){
           12, 17, 18,
           12, 18,  7,
           18,  7, 19,
-           7, 19, 13,
+          7, 19, 13,
           13, 19, 20,
-          19, 20,  8, 
+          13, 20, 8, 
           20,  8, 21,
            8, 21, 14,
           21, 14, 22,
@@ -350,7 +363,7 @@ function sphere_vertices() {
       vec3( -0.72361*r,  0.52573*r,  0.44722*r ), // 13
       vec3( -0.72361*r, -0.52573*r,  0.44722*r ), // 14
       vec3(  0.27639*r, -0.85065*r,  0.44722*r ), // 15
-      vec3(  0.95106*r,  0.30901*r,  0.00000*r ), // 16
+      vec3(  0.95106*r,  0.30901*r,  0.00000*r ), // 16 
       vec3(  0.58779*r,  0.80902*r,  0.00000*r ), // 17
       vec3(  0.00000*r,  1.00000*r,  0.00000*r ), // 18
       vec3( -0.58779*r,  0.80902*r,  0.00000*r ), // 19
@@ -377,9 +390,6 @@ function sphere_vertices() {
       vec3(  0.42532*r, -0.30901*r, -0.85065*r ), // 40
       vec3(  0.00000*r,  0.00000*r, -1.00000*r )  // 41
       
-      
-      
-
   ];
 }
 
@@ -389,7 +399,16 @@ function tri_tri(i, j, k){
 
   for ( var i = 0; i < indices.length; ++i){
     points.push( vertices[indices[i]] );
-    colors.push( RED );
+    colors.push(color);
+    // var c = 0.5;
+    // colors.push( [c*(1.0+vertices[indices[i]][0]/r),
+                  // c*(1.0+vertices[indices[i]][1]/r),
+                  // c*(1.0+vertices[indices[i]][2]/r),
+                  // 1.0] ) ;
+    // colors.push( [c*(1.0+vertices[indices[i]][0]*vertices[indices[i]][0]/(r*r)),
+                  // c*(1.0+vertices[indices[i]][1]*vertices[indices[i]][1]/(r*r)),
+                  // c*(1.0+vertices[indices[i]][2]*vertices[indices[i]][2]/(r*r)),
+                  // 1.0] ) ;
   }
 }
 
@@ -489,7 +508,17 @@ function tri_quad2(i, j, k, l){
 
   for ( var i = 0; i < indices.length; ++i){
     points.push( vertices[indices[i]] );
-    colors.push( RED );
+    var c = 0.5;
+    colors.push(color);
+     // colors.push( [c*(1.0+vertices[indices[i]][0]/r),
+                  // c*(1.0+vertices[indices[i]][1]/r),
+                  // c*(1.0+vertices[indices[i]][2]/r),
+                  // 1.0] ) ;
+     // colors.push( [c*(1.0+vertices[indices[i]][0]*vertices[indices[i]][0]/(r*r)),
+                  // c*(1.0+vertices[indices[i]][1]*vertices[indices[i]][1]/(r*r)),
+                  // c*(1.0+vertices[indices[i]][2]*vertices[indices[i]][2]/(r*r)),
+                  // 1.0] ) ;
+    //colors.push( RED );
   }
 }
 
