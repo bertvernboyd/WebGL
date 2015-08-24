@@ -3,12 +3,50 @@
 var BLACK = [ 0.0, 0.0, 0.0, 1.0 ];
 var WHITE = [ 1.0, 1.0, 1.0, 1.0 ];
 
+var N_MODELS = 4;
+
 var gl;
-var cyl_points = [];
-var data;
+var vtx_buf = [];
+var data = [];
+var theta = [ [ 0, 0, 0 ], [ -90, 0, 0 ], [ 45, 0, 0 ], [ 0, 0, 0 ] ];
+var trans = [ [ -0.5,  0.5, 0, 0 ], [ -0.5, -0.5, 0, 0 ], [ 0.5,  0.5, 0, 0 ], [ 0.5, -0.5, 0, 0 ] ];
+var scale = [ [ 0.1, 0.1, 0.1 ], [ 0.1, 0.1, 0.1 ], [ 0.1, 0.1, 0.1 ], [ 0.1, 0.1, 0.1 ] ];
+
+var pos_loc;
+var theta_loc;
+var trans_loc;
+var scale_loc;
 
 window.onload = function init()
 {
+  gl_init();
+  
+  data = [ 
+    to_gl_data( cube_vtx(), cube_tri_indx(), cube_quad_indx() ),
+    to_gl_data( cone_vtx(), cone_tri_indx(), cone_quad_indx() ),
+    to_gl_data( cyl_vtx(), cyl_tri_indx(), cyl_quad_indx() ),
+    to_gl_data( sph_vtx(), sph_tri_indx(), sph_quad_indx() )
+  ]
+  
+  for( var i = 0; i < N_MODELS; ++i){
+    vtx_buf[i] = gl.createBuffer();
+    gl.bindBuffer( gl.ARRAY_BUFFER, vtx_buf[i] );
+    gl.bufferData( gl.ARRAY_BUFFER, flatten( data[i][0] ), gl.STATIC_DRAW );
+  }
+
+  //var c_buf = gl.createBuffer();
+  //gl.bindBuffer( gl.ARRAY_BUFFER, c_buf );
+  //gl.bufferData( gl.ARRAY_BUFFER, cyl_data[1], gl.STATIC_DRAW );
+
+  //var vColor = gl.getAttribLocation( program, "vColor" );
+  //gl.vertexAttribPointer( vColor, 4, gl.FLOAT, false, 0, 0 );
+  //gl.enableVertexAttribArray( vColor );
+ 
+
+  render();
+};
+
+function gl_init(){
   var canvas = $( "#gl-canvas" );
   gl = WebGLUtils.setupWebGL( canvas[0] );
   if (! gl ) { alert( "WebGL isn't available" ); }
@@ -17,32 +55,78 @@ window.onload = function init()
   gl.enable( gl.DEPTH_TEST );
   var program = initShaders( gl, "vertex-shader", "fragment-shader" );
   gl.useProgram( program ); 
+  
+  pos_loc = gl.getAttribLocation( program, "vPosition" );
+  gl.enableVertexAttribArray( pos_loc ); 
+  
+  theta_loc = gl.getUniformLocation( program, "theta" );
+  trans_loc = gl.getUniformLocation( program, "translation" );
+  scale_loc = gl.getUniformLocation( program, "scale" );
+}
 
-  data = to_gl_data( cyl_vtx(), cyl_tri_indx(), cyl_quad_indx() );
- 
-  console.log(data[0].length);
- 
-  var v_buf = gl.createBuffer();
-  gl.bindBuffer( gl.ARRAY_BUFFER, v_buf );
-  gl.bufferData( gl.ARRAY_BUFFER, flatten(data[0]), gl.STATIC_DRAW );
+function cube_vtx() {
+  return [
+    vec3(-1.00000, -1.00000,  1.00000),
+    vec3(-1.00000,  1.00000,  1.00000),
+    vec3( 1.00000,  1.00000,  1.00000),
+    vec3( 1.00000, -1.00000,  1.00000),
+    vec3(-1.00000, -1.00000, -1.00000),
+    vec3(-1.00000,  1.00000, -1.00000),
+    vec3( 1.00000,  1.00000, -1.00000),
+    vec3( 1.00000, -1.00000, -1.00000),
+  ];
+}
 
-  var vPosition = gl.getAttribLocation( program, "vPosition" );
-  gl.vertexAttribPointer( vPosition, 3, gl.FLOAT, false, 0, 0 );
-  gl.enableVertexAttribArray( vPosition ); 
+function cube_tri_indx() {
+    return [];
+}
 
-  //var c_buf = gl.createBuffer();
-  //gl.bindBuffer( gl.ARRAY_BUFFER, c_buf );
-  //gl.bufferData( gl.ARRAY_BUFFER, data[1], gl.STATIC_DRAW );
+function cube_quad_indx() {
+  return [
+    1, 0, 3, 2, 2, 3, 7, 6, 3, 0, 4, 7,
+    6, 5, 1, 2, 4, 5, 6, 7, 5, 4, 0, 1
+  ];
+}
 
-  //var vColor = gl.getAttribLocation( program, "vColor" );
-  //gl.vertexAttribPointer( vColor, 4, gl.FLOAT, false, 0, 0 );
-  //gl.enableVertexAttribArray( vColor );
+function cone_vtx() {
+  return [
+    vec3(  0.00000,  0.00000,  1.00000 ),
+    vec3(  0.00000,  0.00000, -1.00000 ),
+    vec3(  0.00000,  1.00000, -1.00000 ),
+    vec3(  0.38268,  0.92388, -1.00000 ),
+    vec3(  0.70711,  0.70711, -1.00000 ),
+    vec3(  0.92388,  0.38268, -1.00000 ),
+    vec3(  1.00000,  0.00000, -1.00000 ),
+    vec3(  0.92388, -0.38268, -1.00000 ),
+    vec3(  0.70711, -0.70711, -1.00000 ),
+    vec3(  0.38268, -0.92388, -1.00000 ),
+    vec3(  0.00000, -1.00000, -1.00000 ),
+    vec3( -0.38268, -0.92388, -1.00000 ),
+    vec3( -0.70711, -0.70711, -1.00000 ),
+    vec3( -0.92388, -0.38268, -1.00000 ),
+    vec3( -1.00000,  0.00000, -1.00000 ),
+    vec3( -0.92388,  0.38268, -1.00000 ),
+    vec3( -0.70711,  0.70711, -1.00000 ),
+    vec3( -0.38268,  0.92388, -1.00000 )
+  ];
+}
 
-  render();
-};
+function cone_tri_indx() {
+  return [
+     0,  2,  3,  1,  2,  3,  0,  3,  4,  1,  3,  4,
+     0,  4,  5,  1,  4,  5,  0,  5,  6,  1,  5,  6,
+     0,  6,  7,  1,  6,  7,  0,  7,  8,  1,  7,  8,
+     0,  8,  9,  1,  8,  9,  0,  9, 10,  1,  9, 10,
+     0, 10, 11,  1, 10, 11,  0, 11, 12,  1, 11, 12,
+     0, 12, 13,  1, 12, 13,  0, 13, 14,  1, 13, 14,
+     0, 14, 15,  1, 14, 15,  0, 15, 16,  1, 15, 16,
+     0, 16, 17,  1, 16, 17,  0, 17,  2,  1, 17,  2
+  ];
+}
 
-var v_cyl_buf;
-var c_cyl_buf;
+function cone_quad_indx() {
+  return [ ];
+}
 
 function cyl_vtx() {
   return [
@@ -107,6 +191,82 @@ function cyl_quad_indx() {
   ];
 }
 
+function sph_vtx() {
+  return [
+    vec3(  0.00000,  0.00000,  1.00000 ),
+    vec3(  0.52573,  0.00000,  0.85065 ),
+    vec3(  0.16246,  0.50000,  0.85065 ),
+    vec3( -0.42532,  0.30901,  0.85065 ),
+    vec3( -0.42532, -0.30901,  0.85065 ),
+    vec3(  0.16246, -0.50000,  0.85065 ),
+    vec3(  0.68819,  0.50000,  0.52574 ),
+    vec3( -0.26287,  0.80901,  0.52574 ),
+    vec3( -0.85065,  0.00000,  0.52574 ),
+    vec3( -0.26287, -0.80901,  0.52574 ),
+    vec3(  0.68819, -0.50000,  0.52574 ),
+    vec3(  0.89443,  0.00000,  0.44722 ),
+    vec3(  0.27639,  0.85065,  0.44722 ),
+    vec3( -0.72361,  0.52573,  0.44722 ),
+    vec3( -0.72361, -0.52573,  0.44722 ),
+    vec3(  0.27639, -0.85065,  0.44722 ),
+    vec3(  0.95106,  0.30901,  0.00000 ), 
+    vec3(  0.58779,  0.80902,  0.00000 ),
+    vec3(  0.00000,  1.00000,  0.00000 ),
+    vec3( -0.58779,  0.80902,  0.00000 ),
+    vec3( -0.95106,  0.30901,  0.00000 ),
+    vec3( -0.95106, -0.30901,  0.00000 ),
+    vec3( -0.58779, -0.80902,  0.00000 ),
+    vec3(  0.00000, -1.00000,  0.00000 ),
+    vec3(  0.58779, -0.80902,  0.00000 ),
+    vec3(  0.95106, -0.30901,  0.00000 ),
+    vec3(  0.72361,  0.52573, -0.44722 ),
+    vec3( -0.27639,  0.85065, -0.44722 ),
+    vec3( -0.89443,  0.00000, -0.44722 ),
+    vec3( -0.27639, -0.85065, -0.44722 ), 
+    vec3(  0.72361, -0.52573, -0.44722 ),
+    vec3(  0.85065,  0.00000, -0.52574 ),
+    vec3(  0.26287,  0.80901, -0.52574 ),
+    vec3( -0.68819,  0.50000, -0.52574 ),
+    vec3( -0.68819, -0.50000, -0.52574 ),
+    vec3(  0.26287, -0.80901, -0.52574 ),
+    vec3(  0.42532,  0.30901, -0.85065 ),
+    vec3( -0.16246,  0.50000, -0.85065 ),
+    vec3( -0.52573,  0.00000, -0.85065 ),
+    vec3( -0.16246, -0.50000, -0.85065 ),
+    vec3(  0.42532, -0.30901, -0.85065 ),
+    vec3(  0.00000,  0.00000, -1.00000 )   
+  ];
+}
+
+function sph_tri_indx(){
+  return [
+     0,  1,  2,  0,  2,  3,  0,  3,  4,  0,  4,  5,
+     0,  5,  1,  1,  6,  2,  2,  7,  3,  3,  8,  4,
+     4,  9,  5,  5, 10,  1,  1, 11,  6,  2,  6, 12,
+     2, 12,  7,  3,  7, 13,  3, 13,  8,  4,  8, 14,
+     4, 14,  9,  5,  9, 15,  5, 15, 10,  1, 10, 11,
+    11, 16,  6, 16, 17,  6,  6, 17, 12,  2, 17, 18,
+    12, 18,  7, 18,  7, 19,  7, 19, 13, 13, 19, 20,
+    13, 20,  8, 20,  8, 21,  8, 21, 14, 21, 14, 22,
+    14, 22,  9, 22,  9, 23,  9, 23, 15, 23, 15, 24,
+    15, 24, 10, 24, 10, 25, 10, 25, 11, 25, 11, 16,
+    16, 26, 17, 18, 27, 19, 20, 28, 21, 22, 29, 23,
+    24, 30, 25, 30, 31, 25, 25, 31, 16, 31, 26, 16,
+    26, 32, 17, 17, 32, 18, 32, 27, 18, 27, 33, 19,
+    19, 33, 20, 33, 28, 20, 28, 34, 21, 21, 34, 22,
+    34, 29, 22, 29, 35, 23, 23, 35, 24, 35, 30, 24,
+    31, 36, 26, 26, 36, 32, 36, 32, 37, 32, 37, 27,
+    37, 27, 33, 37, 33, 38, 33, 38, 28, 38, 34, 28,
+    38, 39, 34, 34, 39, 29, 39, 35, 29, 39, 40, 35,
+    35, 40, 30, 40, 31, 30, 40, 36, 31, 36, 41, 37,
+    37, 41, 38, 38, 41, 39, 39, 41, 40, 40, 41, 36
+  ];
+}
+
+function sph_quad_indx() {
+    return [];
+}
+
 function to_gl_data(vtx, tri_indx, quad_indx){
   if( ( tri_indx.length % 3 ) != 0 ) {
     alert( " tri_indx.length must be divisible by 3 ");
@@ -133,6 +293,14 @@ function to_gl_data(vtx, tri_indx, quad_indx){
 function render() {
   window.requestAnimFrame( render );
   gl.clear( gl.COLOR_BUFFER_BIT );
- 
-  gl.drawArrays( gl.TRIANGLES, 0, data[0].length ); 
+  
+  for (var i = 0; i < N_MODELS; ++i)
+  {
+    gl.bindBuffer( gl.ARRAY_BUFFER, vtx_buf[i]);
+    gl.vertexAttribPointer( pos_loc, 3, gl.FLOAT, false, 0, 0 );
+    gl.uniform3fv(theta_loc, theta[i]);
+    gl.uniform4fv(trans_loc, trans[i]);
+    gl.uniform3fv(scale_loc, scale[i]);
+    gl.drawArrays( gl.TRIANGLES, 0, data[i][0].length ); 
+  }
 }
