@@ -1,18 +1,29 @@
 "use strict";
 
-var BLACK = [ 0.0, 0.0, 0.0, 1.0 ];
-var WHITE = [ 1.0, 1.0, 1.0, 1.0 ];
+var MAGENTA = vec4( 1.0, 0.0, 1.0, 1.0 );
+var RED     = vec4( 1.0, 0.0, 0.0, 1.0 );
+var YELLOW  = vec4( 1.0, 1.0, 0.0, 1.0 );
+var GREEN   = vec4( 0.0, 1.0, 0.0, 1.0 );
+var CYAN    = vec4( 0.0, 1.0, 1.0, 1.0 );
+var BLUE    = vec4( 0.0, 0.0, 1.0, 1.0 );
+var BLACK   = vec4( 0.0, 0.0, 0.0, 1.0 );
+var WHITE   = vec4( 1.0, 1.0, 1.0, 1.0 );
 
 var N_MODELS = 4;
 
 var gl;
 var vtx_buf = [];
+var color_buf = []; 
 var data = [];
-var theta = [ [ 0, 0, 0 ], [ -90, 0, 0 ], [ 45, 0, 0 ], [ 0, 0, 0 ] ];
-var trans = [ [ -0.5,  0.5, 0, 0 ], [ -0.5, -0.5, 0, 0 ], [ 0.5,  0.5, 0, 0 ], [ 0.5, -0.5, 0, 0 ] ];
-var scale = [ [ 0.1, 0.1, 0.1 ], [ 0.1, 0.1, 0.1 ], [ 0.1, 0.1, 0.1 ], [ 0.1, 0.1, 0.1 ] ];
+
+var tx = 0.5;
+var sc = 0.2;
+var theta = [ [ 0, 0, 0 ], [ -90, 0, 0 ], [ 45, -45, 0 ], [ 0, 0, 0 ] ];
+var trans = [ [ -tx,  tx, 0, 0 ], [ -tx, -tx, 0, 0 ], [ tx,  tx, 0, 0 ], [ tx, -0.5, 0, 0 ] ];
+var scale = [ [ sc, sc, sc ], [ sc, sc, sc ], [ sc, sc, sc ], [ sc, sc, sc ] ];
 
 var pos_loc;
+var color_loc
 var theta_loc;
 var trans_loc;
 var scale_loc;
@@ -32,16 +43,10 @@ window.onload = function init()
     vtx_buf[i] = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, vtx_buf[i] );
     gl.bufferData( gl.ARRAY_BUFFER, flatten( data[i][0] ), gl.STATIC_DRAW );
+    color_buf[i] = gl.createBuffer();
+    gl.bindBuffer( gl.ARRAY_BUFFER, color_buf[i] );
+    gl.bufferData( gl.ARRAY_BUFFER, flatten( data[i][1] ), gl.STATIC_DRAW );
   }
-
-  //var c_buf = gl.createBuffer();
-  //gl.bindBuffer( gl.ARRAY_BUFFER, c_buf );
-  //gl.bufferData( gl.ARRAY_BUFFER, cyl_data[1], gl.STATIC_DRAW );
-
-  //var vColor = gl.getAttribLocation( program, "vColor" );
-  //gl.vertexAttribPointer( vColor, 4, gl.FLOAT, false, 0, 0 );
-  //gl.enableVertexAttribArray( vColor );
- 
 
   render();
 };
@@ -58,6 +63,9 @@ function gl_init(){
   
   pos_loc = gl.getAttribLocation( program, "vPosition" );
   gl.enableVertexAttribArray( pos_loc ); 
+  
+  color_loc = gl.getAttribLocation( program, "vColor" );
+  gl.enableVertexAttribArray( color_loc );   
   
   theta_loc = gl.getUniformLocation( program, "theta" );
   trans_loc = gl.getUniformLocation( program, "translation" );
@@ -130,40 +138,40 @@ function cone_quad_indx() {
 
 function cyl_vtx() {
   return [
-    vec3(  0.00000,  0.00000,  1.00000 ),
-    vec3(  0.00000,  1.00000,  1.00000 ),
-    vec3(  0.38268,  0.92388,  1.00000 ),
-    vec3(  0.70711,  0.70711,  1.00000 ),
-    vec3(  0.92388,  0.38268,  1.00000 ),
-    vec3(  1.00000,  0.00000,  1.00000 ),
-    vec3(  0.92388, -0.38268,  1.00000 ),
-    vec3(  0.70711, -0.70711,  1.00000 ),
-    vec3(  0.38268, -0.92388,  1.00000 ),
-    vec3(  0.00000, -1.00000,  1.00000 ),
-    vec3( -0.38268, -0.92388,  1.00000 ),
-    vec3( -0.70711, -0.70711,  1.00000 ),
-    vec3( -0.92388, -0.38268,  1.00000 ),
-    vec3( -1.00000,  0.00000,  1.00000 ),
-    vec3( -0.92388,  0.38268,  1.00000 ),
-    vec3( -0.70711,  0.70711,  1.00000 ),
-    vec3( -0.38268,  0.92388,  1.00000 ),
-    vec3(  0.00000,  0.00000, -1.00000 ),
-    vec3(  0.00000,  1.00000, -1.00000 ),
-    vec3(  0.38268,  0.92388, -1.00000 ),
-    vec3(  0.70711,  0.70711, -1.00000 ),
-    vec3(  0.92388,  0.38268, -1.00000 ),
-    vec3(  1.00000,  0.00000, -1.00000 ),
-    vec3(  0.92388, -0.38268, -1.00000 ),
-    vec3(  0.70711, -0.70711, -1.00000 ),
-    vec3(  0.38268, -0.92388, -1.00000 ),
-    vec3(  0.00000, -1.00000, -1.00000 ),
-    vec3( -0.38268, -0.92388, -1.00000 ),
-    vec3( -0.70711, -0.70711, -1.00000 ),
-    vec3( -0.92388, -0.38268, -1.00000 ),
-    vec3( -1.00000,  0.00000, -1.00000 ),
-    vec3( -0.92388,  0.38268, -1.00000 ),
-    vec3( -0.70711,  0.70711, -1.00000 ),
-    vec3( -0.38268,  0.92388, -1.00000 )
+    vec3(  0.00000,  0.00000,  1.00000 ), //  0 
+    vec3(  0.00000,  1.00000,  1.00000 ), //  1
+    vec3(  0.38268,  0.92388,  1.00000 ), //  2 
+    vec3(  0.70711,  0.70711,  1.00000 ), //  3 
+    vec3(  0.92388,  0.38268,  1.00000 ), //  4 
+    vec3(  1.00000,  0.00000,  1.00000 ), //  5 
+    vec3(  0.92388, -0.38268,  1.00000 ), //  6 
+    vec3(  0.70711, -0.70711,  1.00000 ), //  7 
+    vec3(  0.38268, -0.92388,  1.00000 ), //  8 
+    vec3(  0.00000, -1.00000,  1.00000 ), //  9 
+    vec3( -0.38268, -0.92388,  1.00000 ), // 10 
+    vec3( -0.70711, -0.70711,  1.00000 ), // 11  
+    vec3( -0.92388, -0.38268,  1.00000 ), // 12 
+    vec3( -1.00000,  0.00000,  1.00000 ), // 13 
+    vec3( -0.92388,  0.38268,  1.00000 ), // 14 
+    vec3( -0.70711,  0.70711,  1.00000 ), // 15 
+    vec3( -0.38268,  0.92388,  1.00000 ), // 16 
+    vec3(  0.00000,  0.00000, -1.00000 ), // 17 
+    vec3(  0.00000,  1.00000, -1.00000 ), // 18 
+    vec3(  0.38268,  0.92388, -1.00000 ), // 19 
+    vec3(  0.70711,  0.70711, -1.00000 ), // 20 
+    vec3(  0.92388,  0.38268, -1.00000 ), // 21
+    vec3(  1.00000,  0.00000, -1.00000 ), // 22
+    vec3(  0.92388, -0.38268, -1.00000 ), // 23 
+    vec3(  0.70711, -0.70711, -1.00000 ), // 24 
+    vec3(  0.38268, -0.92388, -1.00000 ), // 25 
+    vec3(  0.00000, -1.00000, -1.00000 ), // 26 
+    vec3( -0.38268, -0.92388, -1.00000 ), // 27 
+    vec3( -0.70711, -0.70711, -1.00000 ), // 28
+    vec3( -0.92388, -0.38268, -1.00000 ), // 29
+    vec3( -1.00000,  0.00000, -1.00000 ), // 30
+    vec3( -0.92388,  0.38268, -1.00000 ), // 31
+    vec3( -0.70711,  0.70711, -1.00000 ), // 32
+    vec3( -0.38268,  0.92388, -1.00000 )  // 33
   ];
 }
 
@@ -182,12 +190,12 @@ function cyl_tri_indx() {
 
 function cyl_quad_indx() {
   return [
-     1,  2, 18, 19,  2,  3, 19, 20,  3,  4, 20, 21,
-     4,  5, 21, 22,  5,  6, 22, 23,  6,  7, 23, 24,
-     7,  8, 24, 25,  8,  9, 25, 26,  9, 10, 26, 27,
-    10, 11, 27, 28, 11, 12, 28, 29, 12, 13, 29, 30,
-    13, 14, 30, 31, 14, 15, 31, 32, 15, 16, 32, 33,
-    16,  1, 33, 18
+     1,  2, 19, 18,  2,  3, 20, 19,  3,  4, 21, 20, 
+     4,  5, 22, 21,  5,  6, 23, 22,  6,  7, 24, 23, 
+     7,  8, 25, 24,  8,  9, 26, 25,  9, 10, 27, 26, 
+    10, 11, 28, 27, 11, 12, 29, 28, 12, 13, 30, 29, 
+    13, 14, 31, 30, 14, 15, 32, 31, 15, 16, 33, 32, 
+    16,  1, 18, 33
   ];
 }
 
@@ -280,12 +288,12 @@ function to_gl_data(vtx, tri_indx, quad_indx){
   var colors = [];
   for( var i = 0; i < tri_indx.length; i += 3){
     points.push( vtx[ tri_indx [ i ] ], vtx[ tri_indx [ i+1 ] ], vtx[ tri_indx [ i+2 ] ] );
-    //colors.push( BLACK, BLACK, BLACK );     
+    colors.push( RED, RED, RED );     
   }
   for( var i = 0; i < quad_indx.length; i += 4){
     points.push( vtx[ quad_indx [ i ] ], vtx[ quad_indx [ i+1 ] ], vtx[ quad_indx [ i+2 ] ] );
     points.push( vtx[ quad_indx [ i ] ], vtx[ quad_indx [ i+2 ] ], vtx[ quad_indx [ i+3 ] ] );
-    //colors.push( BLACK, BLACK, BLACK, BLACK, BLACK, BLACK );
+    colors.push( BLACK, BLACK, BLACK, BLACK, BLACK, BLACK );
   }
   return [points, colors]; 
 }
@@ -298,6 +306,8 @@ function render() {
   {
     gl.bindBuffer( gl.ARRAY_BUFFER, vtx_buf[i]);
     gl.vertexAttribPointer( pos_loc, 3, gl.FLOAT, false, 0, 0 );
+    gl.bindBuffer( gl.ARRAY_BUFFER, color_buf[i]);
+    gl.vertexAttribPointer( color_loc, 4, gl.FLOAT, false, 0, 0 );
     gl.uniform3fv(theta_loc, theta[i]);
     gl.uniform4fv(trans_loc, trans[i]);
     gl.uniform3fv(scale_loc, scale[i]);

@@ -42,9 +42,8 @@ main()
             0.0,  0.0, scale.z, 0.0,
             0.0,  0.0, 0.0, 1.0 ) ;
 
-    //gl_Position = sc * rz * ry * rx * vPosition + translation;
     gl_Position = sc * rz * ry * rx * vPosition + translation;
-    //fColor = vColor;
+    fColor = vColor;
 }
 </script>
 
@@ -56,9 +55,7 @@ varying vec4 fColor;
 void
 main()
 {
-    //gl_FragColor = fColor;
-    gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0 );
-    
+    gl_FragColor = fColor;
 }
 </script>
 
