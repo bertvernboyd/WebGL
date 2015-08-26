@@ -13,20 +13,53 @@ var N_MODELS = 4;
 
 var gl;
 var vtx_buf = [];
-var color_buf = []; 
+var normal_buf = [];
 var data = [];
 
 var tx = 0.5;
 var sc = 0.2;
-var theta = [ [ 0, 0, 0 ], [ -90, 0, 0 ], [ 45, -45, 0 ], [ 0, 0, 0 ] ];
-var trans = [ [ -tx,  tx, 0, 0 ], [ -tx, -tx, 0, 0 ], [ tx,  tx, 0, 0 ], [ tx, -0.5, 0, 0 ] ];
+             // cube        // cone     // cylinder    // sphere
+var theta = [ [ 0, 0, 0 ], [ 0, 0, 0 ], [ 0, 0, 0 ], [ 0, 0, 0 ] ];
+var trans = [ [ -tx, tx, 0, 0 ], [ -tx, -tx, 0, 0 ], [ tx,  tx, 0, 0 ], [ tx, -tx, 0, 0 ] ];
 var scale = [ [ sc, sc, sc ], [ sc, sc, sc ], [ sc, sc, sc ], [ sc, sc, sc ] ];
 
 var pos_loc;
-var color_loc
 var theta_loc;
 var trans_loc;
 var scale_loc;
+var normal_loc;
+var model_view_loc;
+var proj_loc;
+var normal_mat_loc;
+
+var near = -10;
+var far = 10;
+
+var left = -1.0;
+var right = 1.0;
+var ytop = 1.0;
+var bottom = -1.0;
+
+var lightPosition = vec4(0, 0, 1.0, 0 );
+var lightAmbient = vec4(0.2, 0.2, 0.2, 1.0 );
+var lightDiffuse = vec4( 1.0, 1.0, 1.0, 1.0 );
+var lightSpecular = vec4( 1.0, 1.0, 1.0, 1.0 );
+
+var materialAmbient = vec4( 1.0, 0.0, 1.0, 1.0 );
+var materialDiffuse = vec4( 1.0, 0.8, 0.0, 1.0 );
+var materialSpecular = vec4( 1.0, 1.0, 1.0, 1.0 );
+var materialShininess = 20.0;
+
+var ctm;
+var ambientColor, diffuseColor, specularColor;
+
+var model_view;
+var proj;
+var normal_mat;
+
+var eye = vec3(0.0, 0.0, -1.0);
+var at = vec3(0.0, 0.0, 0.0);
+var up = vec3(0.0, 1.0, 0.0);
 
 window.onload = function init()
 {
@@ -43,8 +76,8 @@ window.onload = function init()
     vtx_buf[i] = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, vtx_buf[i] );
     gl.bufferData( gl.ARRAY_BUFFER, flatten( data[i][0] ), gl.STATIC_DRAW );
-    color_buf[i] = gl.createBuffer();
-    gl.bindBuffer( gl.ARRAY_BUFFER, color_buf[i] );
+    normal_buf[i] = gl.createBuffer();
+    gl.bindBuffer( gl.ARRAY_BUFFER , normal_buf[i] );
     gl.bufferData( gl.ARRAY_BUFFER, flatten( data[i][1] ), gl.STATIC_DRAW );
   }
 
@@ -56,20 +89,39 @@ function gl_init(){
   gl = WebGLUtils.setupWebGL( canvas[0] );
   if (! gl ) { alert( "WebGL isn't available" ); }
   gl.viewport( 0, 0, canvas.width(), canvas.height() );
-  gl.clearColor( 1.0, 1.0, 1.0, 1.0 );
+  gl.clearColor( 0.0, 0.0, 0.0, 1.0 );
   gl.enable( gl.DEPTH_TEST );
   var program = initShaders( gl, "vertex-shader", "fragment-shader" );
   gl.useProgram( program ); 
   
+  var ambientProduct = mult(lightAmbient, materialAmbient);
+  var diffuseProduct = mult(lightDiffuse, materialDiffuse);
+  var specularProduct = mult(lightSpecular, materialSpecular);
+
   pos_loc = gl.getAttribLocation( program, "vPosition" );
   gl.enableVertexAttribArray( pos_loc ); 
   
-  color_loc = gl.getAttribLocation( program, "vColor" );
-  gl.enableVertexAttribArray( color_loc );   
+  normal_loc = gl.getAttribLocation( program, "vNormal" );
+  gl.enableVertexAttribArray( normal_loc ); 
   
   theta_loc = gl.getUniformLocation( program, "theta" );
   trans_loc = gl.getUniformLocation( program, "translation" );
   scale_loc = gl.getUniformLocation( program, "scale" );
+  
+  model_view_loc = gl.getUniformLocation( program, "modelViewMatrix" );
+  proj_loc = gl.getUniformLocation( program, "projectionMatrix" );
+  normal_mat_loc = gl.getUniformLocation( program, "normalMatrix" );
+  
+  gl.uniform4fv( gl.getUniformLocation(program,
+     "ambientProduct"),flatten(ambientProduct) );
+  gl.uniform4fv( gl.getUniformLocation(program,
+     "diffuseProduct"),flatten(diffuseProduct) );
+  gl.uniform4fv( gl.getUniformLocation(program,
+     "specularProduct"),flatten(specularProduct) );
+  gl.uniform4fv( gl.getUniformLocation(program,
+     "lightPosition"),flatten(lightPosition) );
+  gl.uniform1f( gl.getUniformLocation(program,
+       "shininess"),materialShininess );
 }
 
 function cube_vtx() {
@@ -91,8 +143,8 @@ function cube_tri_indx() {
 
 function cube_quad_indx() {
   return [
-    1, 0, 3, 2, 2, 3, 7, 6, 3, 0, 4, 7,
-    6, 5, 1, 2, 4, 5, 6, 7, 5, 4, 0, 1
+    1, 0, 3, 2, 2, 3, 7, 6, 0, 4, 7, 3,
+    1, 2, 6, 5, 4, 5, 6, 7, 5, 4, 0, 1
   ];
 }
 
@@ -121,14 +173,14 @@ function cone_vtx() {
 
 function cone_tri_indx() {
   return [
-     0,  2,  3,  1,  2,  3,  0,  3,  4,  1,  3,  4,
-     0,  4,  5,  1,  4,  5,  0,  5,  6,  1,  5,  6,
-     0,  6,  7,  1,  6,  7,  0,  7,  8,  1,  7,  8,
-     0,  8,  9,  1,  8,  9,  0,  9, 10,  1,  9, 10,
-     0, 10, 11,  1, 10, 11,  0, 11, 12,  1, 11, 12,
-     0, 12, 13,  1, 12, 13,  0, 13, 14,  1, 13, 14,
-     0, 14, 15,  1, 14, 15,  0, 15, 16,  1, 15, 16,
-     0, 16, 17,  1, 16, 17,  0, 17,  2,  1, 17,  2
+     0,  3,  2,  1,  2,  3,  0,  4,  3,  1,   3,  4, 
+     0,  5,  4,  1,  4,  5,  0,  6,  5,  1,   5,  6, 
+     0,  7,  6,  1,  6,  7,  0,  8,  7,  1,   7,  8, 
+     0,  9,  8,  1,  8,  9,  0, 10,  9,  1,   9, 10, 
+     0, 11, 10,  1, 10, 11,  0, 12, 11,  1,  11, 12, 
+     0, 13, 12,  1, 12, 13,  0, 14, 13,  1,  13, 14, 
+     0, 15, 14,  1, 14, 15,  0, 16, 15,  1,  15, 16, 
+     0, 17, 16,  1, 16, 17,  0,  2, 17,  1,  17,  2, 
   ];
 }
 
@@ -177,10 +229,10 @@ function cyl_vtx() {
 
 function cyl_tri_indx() {
   return [
-     0,  1,  2,  0,  2,  3,  0,  3,  4,  0,  4,  5,
-     0,  5,  6,  0,  6,  7,  0,  7,  8,  0,  8,  9,
-     0,  9, 10,  0, 10, 11,  0, 11, 12,  0, 12, 13,
-     0, 13, 14,  0, 14, 15,  0, 15, 16,  0, 16,  1,
+     0,  2,  1,  0,  3,  2,  0,  4,  3,  0,  5,  4, 
+     0,  6,  5,  0,  7,  6,  0,  8,  7,  0,  9,  8, 
+     0, 10,  9,  0, 11, 10,  0, 12, 11,  0, 13, 12, 
+     0, 14, 13,  0, 15, 14,  0, 16, 15,  0,  1, 16, 
     17, 18, 19, 17, 19, 20, 17, 20, 21, 17, 21, 22,
     17, 22, 23, 17, 23, 24, 17, 24, 25, 17, 25, 26,
     17, 26, 27, 17, 27, 28, 17, 28, 29, 17, 29, 30,
@@ -285,29 +337,72 @@ function to_gl_data(vtx, tri_indx, quad_indx){
     return;
   }
   var points = [];
-  var colors = [];
+  var normals = [];
+  var v0, v1, v2, v3, v01, v02, v03, n0, n1;
   for( var i = 0; i < tri_indx.length; i += 3){
-    points.push( vtx[ tri_indx [ i ] ], vtx[ tri_indx [ i+1 ] ], vtx[ tri_indx [ i+2 ] ] );
-    colors.push( RED, RED, RED );     
+    v0 = vtx[tri_indx[i]];
+    v1 = vtx[tri_indx[i+1]];
+    v2 = vtx[tri_indx[i+2]];
+    v01 = subtract( v1, v0 );
+    v02 = subtract( v2, v0 );
+    n0 = vec4( normalize( cross( v02, v01 ) ) );
+    n0[3] = 0.0;
+    points.push( v0 , v1, v2 );
+    normals.push( n0, n0, n0 );     
   }
   for( var i = 0; i < quad_indx.length; i += 4){
-    points.push( vtx[ quad_indx [ i ] ], vtx[ quad_indx [ i+1 ] ], vtx[ quad_indx [ i+2 ] ] );
-    points.push( vtx[ quad_indx [ i ] ], vtx[ quad_indx [ i+2 ] ], vtx[ quad_indx [ i+3 ] ] );
-    colors.push( BLACK, BLACK, BLACK, BLACK, BLACK, BLACK );
+    v0 = vtx[quad_indx[i]];
+    v1 = vtx[quad_indx[i+1]];
+    v2 = vtx[quad_indx[i+2]];
+    v3 = vtx[quad_indx[i+3]];
+    v01 = subtract( v1, v0 );
+    v02 = subtract( v2, v0 );
+    v03 = subtract( v3, v0 );
+    n0 = vec4( normalize( cross( v02, v01 ) ) );
+    n1 = vec4( normalize( cross( v03, v02 ) ) );
+    n0[3] = n1[3] = 0.0;
+    points.push( v0, v1, v2 );
+    points.push( v0, v2, v3 );
+    normals.push( n0, n0, n0, n1, n1, n1 );
   }
-  return [points, colors]; 
+  return [points, normals]; 
 }
 
 function render() {
   window.requestAnimFrame( render );
-  gl.clear( gl.COLOR_BUFFER_BIT );
+  gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
+  
+  // TODO test
+  theta[0][0] += 1;
+  theta[0][1] += 2;
+  theta[0][2] += 0;
+
+  theta[1][0] += 1;
+  theta[1][1] += 2;
+  theta[1][2] += 0;
+  
+  theta[2][0] += 1;
+  theta[2][1] += 2;
+  theta[2][2] += 0;
+  
+  model_view = lookAt(eye, at , up);
+  proj = ortho(left, right, bottom, ytop, near, far);
+  normal_mat = [
+      vec3(model_view[0][0], model_view[0][1], model_view[0][2]),
+      vec3(model_view[1][0], model_view[1][1], model_view[1][2]),
+      vec3(model_view[2][0], model_view[2][1], model_view[2][2])
+  ];
+
+  gl.uniformMatrix4fv(model_view_loc, false, flatten(model_view) );
+  gl.uniformMatrix4fv(proj_loc, false, flatten(proj) );
+  gl.uniformMatrix3fv(normal_mat_loc, false, flatten(normal_mat) );
   
   for (var i = 0; i < N_MODELS; ++i)
   {
     gl.bindBuffer( gl.ARRAY_BUFFER, vtx_buf[i]);
     gl.vertexAttribPointer( pos_loc, 3, gl.FLOAT, false, 0, 0 );
-    gl.bindBuffer( gl.ARRAY_BUFFER, color_buf[i]);
-    gl.vertexAttribPointer( color_loc, 4, gl.FLOAT, false, 0, 0 );
+    gl.bindBuffer( gl.ARRAY_BUFFER, normal_buf[i]);
+    gl.vertexAttribPointer( normal_loc, 4, gl.FLOAT, false, 0, 0 );
     gl.uniform3fv(theta_loc, theta[i]);
     gl.uniform4fv(trans_loc, trans[i]);
     gl.uniform3fv(scale_loc, scale[i]);
