@@ -1,6 +1,6 @@
 $points = [];
 
-num_subdivide = 1
+num_subdivide = 5
 
 v0 = [ 0.000000,  0.000000, -1.000000, 1]
 v1 = [ 0.000000,  0.942809,  0.333333, 1]
@@ -38,10 +38,9 @@ def divide_triangle(a, b, c, count)
     divide_triangle(bc, c, ac, count - 1)
     divide_triangle(ab, bc, ac, count - 1)
   else
-    $points.push(a, b, c)
+    $points.push(a, c, b)
   end
 end
-
 
 def tetrahedron(a, b, c, d, n)
   divide_triangle(a, b, c, n)
@@ -50,15 +49,23 @@ def tetrahedron(a, b, c, d, n)
   divide_triangle(a, c, d, n)
 end
 
-def indx_from_vtx
-  indx = []
-  
-end
-
-
 tetrahedron(v0, v1, v2, v3, num_subdivide);
-puts $points[0]
 
-indices = []
+vtx = $points.uniq
+
+indx = $points.map {|p| vtx.index(p) }
+
+vtx.each {|v| puts "    vec3( #{v[0].abs > 1e-06 ? v[0] : 0}, #{v[1].abs > 1e-06 ? v[1] : 0}, #{v[2].abs > 1e-06 ? v[2] : 0})," }
+
+print "    "
+indx.each.with_index do |e,i|
+  print "\n    " if i % 12 == 0 and i != 0
+  print "#{e}, "
+end
+puts
+
+
+
+
 
 
