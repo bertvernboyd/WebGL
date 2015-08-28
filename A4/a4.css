@@ -1,0 +1,16 @@
+body {
+  margin: 0px;
+  padding: 0px;
+  background-color: #111111;
+  color: #EEEEEE;
+}
+
+.col{
+  display: inline-block;
+  position: absolute;
+}
+
+#right{
+  top: 64px;
+  left: 796px;
+}

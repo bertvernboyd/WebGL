@@ -1,5 +1,23 @@
 "use strict";
 
+var has_point_light = true;
+var has_dir_light = false;
+
+var point_light_pos = vec4(0, 0, 2.0, 1.0 );
+var point_light_ambient = vec4(0.2, 0.2, 0.2, 1.0 );
+var point_light_diffuse = vec4( 1.0, 1.0, 1.0, 1.0 );
+var point_light_specular = vec4( 1.0, 1.0, 1.0, 1.0 );
+
+var dir_light_pos = vec4(0, 0, 1.0, 0.0 );
+var dir_light_ambient = vec4(0.2, 0.2, 0.2, 1.0 );
+var dir_light_diffuse = vec4( 1.0, 1.0, 1.0, 1.0 );
+var dir_light_specular = vec4( 1.0, 1.0, 1.0, 1.0 );
+
+var mat_ambient = vec4( 1.0, 0.0, 1.0, 1.0 );
+var mat_diffuse = vec4( 1.0, 0.8, 0.0, 1.0 );
+var mat_specular = vec4( 0.2, 0.2, 0.2, 1.0 );
+var mat_shininess = 20.0;
+
 var MAGENTA = vec4( 1.0, 0.0, 1.0, 1.0 );
 var RED     = vec4( 1.0, 0.0, 0.0, 1.0 );
 var YELLOW  = vec4( 1.0, 1.0, 0.0, 1.0 );
@@ -10,18 +28,18 @@ var BLACK   = vec4( 0.0, 0.0, 0.0, 1.0 );
 var WHITE   = vec4( 1.0, 1.0, 1.0, 1.0 );
 
 var N_MODELS = 4;
+var model_indx = 0;
 
 var gl;
 var vtx_buf = [];
 var normal_buf = [];
 var data = [];
 
-var tx = 0.5;
-var sc = 0.2;
-             // cube        // cone     // cylinder    // sphere
-var theta = [ [ 0, 0, 0 ], [ 0, 0, 0 ], [ 0, 0, 0 ], [ 0, 0, 0 ] ];
-var trans = [ [ -tx, tx, 0, 0 ], [ -tx, -tx, 0, 0 ], [ tx,  tx, 0, 0 ], [ tx, -tx, 0, 0 ] ];
-var scale = [ [ sc, sc, sc ], [ sc, sc, sc ], [ sc, sc, sc ], [ sc, sc, sc ] ];
+var sc = 0.5;
+             
+var theta = [ -75, 45, 45 ];
+var trans = [ 0, 0, 0, 0 ];
+var scale = [ sc, sc, sc ];
 
 var pos_loc;
 var theta_loc;
@@ -31,6 +49,10 @@ var normal_loc;
 var model_view_loc;
 var proj_loc;
 var normal_mat_loc;
+var point_light_loc;
+var dir_light_loc;
+var has_point_light_loc;
+var has_dir_light_loc;
 
 var near = -10;
 var far = 10;
@@ -39,19 +61,6 @@ var left = -1.0;
 var right = 1.0;
 var ytop = 1.0;
 var bottom = -1.0;
-
-var lightPosition = vec4(0, 0, 1.0, 0 );
-var lightAmbient = vec4(0.2, 0.2, 0.2, 1.0 );
-var lightDiffuse = vec4( 1.0, 1.0, 1.0, 1.0 );
-var lightSpecular = vec4( 1.0, 1.0, 1.0, 1.0 );
-
-var materialAmbient = vec4( 1.0, 0.0, 1.0, 1.0 );
-var materialDiffuse = vec4( 1.0, 0.8, 0.0, 1.0 );
-var materialSpecular = vec4( 1.0, 1.0, 1.0, 1.0 );
-var materialShininess = 20.0;
-
-var ctm;
-var ambientColor, diffuseColor, specularColor;
 
 var model_view;
 var proj;
@@ -64,6 +73,64 @@ var up = vec3(0.0, 1.0, 0.0);
 window.onload = function init()
 {
   gl_init();
+  
+  $("#cube").change(function() {
+      model_indx = 0;
+  });
+  $("#cone").change(function() {
+      model_indx = 1;
+  });
+  $("#cylinder").change(function() {
+      model_indx = 2;
+  });
+  $("#sphere").change(function() {
+      model_indx = 3;
+  });
+  
+  $("#rx").val(theta[0]);
+  $("#rx").change(function() {
+    theta[0] = $("#rx").val();      
+  });
+  $("#ry").val(theta[1]);
+  $("#ry").change(function() {
+    theta[1] = $("#ry").val();    
+  });
+  $("#rz").val(theta[2]);
+  $("#rz").change(function() {
+    theta[2] = $("#rz").val();    
+  });
+  
+  $("#point").change(function() {
+      has_point_light = $("#point").is(':checked');
+  });
+  
+  $("#pz").val(-point_light_pos[2]); 
+  $("#pz").change(function() {
+     point_light_pos[2] = -$("#pz").val()
+  });
+
+  $("#directional").change(function() {
+      has_dir_light = $("#directional").is(':checked');
+  });
+  $("#dx").val(-dir_light_pos[0]); 
+  $("#dx").change(function() {
+     dir_light_pos[0] = -$("#dx").val()
+  });
+  $("#dy").val(dir_light_pos[1]); 
+  $("#dy").change(function() {
+     dir_light_pos[1] = $("#dy").val()
+  });
+  $("#dz").val(dir_light_pos[2]); 
+  $("#dz").change(function() {
+     dir_light_pos[2] = $("#dz").val()
+  });
+  
+  $("#gl-canvas").mousemove(function(event){
+    //translate by
+    var t = canvas_to_screen(event.clientX, event.clientY, $("#gl-canvas")[0].width, $("#gl-canvas")[0].height); 
+    point_light_pos = [t[0], -t[1], point_light_pos[2], point_light_pos[3]];
+
+  });
   
   data = [ 
     to_gl_data( cube_vtx(), cube_tri_indx(), cube_quad_indx() ),
@@ -84,6 +151,10 @@ window.onload = function init()
   render();
 };
 
+function canvas_to_screen(x, y, w, h){
+    return vec2(2*x/w-1, 2*(h-y)/h-1);
+}
+
 function gl_init(){
   var canvas = $( "#gl-canvas" );
   gl = WebGLUtils.setupWebGL( canvas[0] );
@@ -94,9 +165,9 @@ function gl_init(){
   var program = initShaders( gl, "vertex-shader", "fragment-shader" );
   gl.useProgram( program ); 
   
-  var ambientProduct = mult(lightAmbient, materialAmbient);
-  var diffuseProduct = mult(lightDiffuse, materialDiffuse);
-  var specularProduct = mult(lightSpecular, materialSpecular);
+  var ambient_prod = mult(point_light_ambient, mat_ambient);
+  var diffuse_prod = mult(point_light_diffuse, mat_diffuse);
+  var specular_prod = mult(point_light_specular, mat_specular);
 
   pos_loc = gl.getAttribLocation( program, "vPosition" );
   gl.enableVertexAttribArray( pos_loc ); 
@@ -112,16 +183,92 @@ function gl_init(){
   proj_loc = gl.getUniformLocation( program, "projectionMatrix" );
   normal_mat_loc = gl.getUniformLocation( program, "normalMatrix" );
   
+  point_light_loc = gl.getUniformLocation( program, "pointLightPosition" );
+  dir_light_loc = gl.getUniformLocation( program, "directionalLightPosition" )
+  
+  has_point_light_loc = gl.getUniformLocation( program, "hasPointLight" );
+  has_dir_light_loc = gl.getUniformLocation( program, "hasDirectionalLight" );
+  
   gl.uniform4fv( gl.getUniformLocation(program,
-     "ambientProduct"),flatten(ambientProduct) );
+     "ambientProduct"),flatten(ambient_prod) );
   gl.uniform4fv( gl.getUniformLocation(program,
-     "diffuseProduct"),flatten(diffuseProduct) );
+     "diffuseProduct"),flatten(diffuse_prod) );
   gl.uniform4fv( gl.getUniformLocation(program,
-     "specularProduct"),flatten(specularProduct) );
-  gl.uniform4fv( gl.getUniformLocation(program,
-     "lightPosition"),flatten(lightPosition) );
+     "specularProduct"),flatten(specular_prod) );
   gl.uniform1f( gl.getUniformLocation(program,
-       "shininess"),materialShininess );
+       "shininess"),mat_shininess );
+
+}
+
+function to_gl_data(vtx, tri_indx, quad_indx){
+  if( ( tri_indx.length % 3 ) != 0 ) {
+    alert( " tri_indx.length must be divisible by 3 ");
+    return;
+  }
+  if( ( quad_indx.length % 4 ) != 0 ) {
+    alert( " quad_indx.length must be divisible by 4 ");
+    return;
+  }
+  var points = [];
+  var normals = [];
+  var v0, v1, v2, v3, v01, v02, v03, n0, n1;
+  for( var i = 0; i < tri_indx.length; i += 3){
+    v0 = vtx[tri_indx[i]];
+    v1 = vtx[tri_indx[i+1]];
+    v2 = vtx[tri_indx[i+2]];
+    v01 = subtract( v1, v0 );
+    v02 = subtract( v2, v0 );
+    n0 = vec4( normalize( cross( v02, v01 ) ) );
+    n0[3] = 0.0;
+    points.push( v0 , v1, v2 );
+    normals.push( n0, n0, n0 );     
+  }
+  for( var i = 0; i < quad_indx.length; i += 4){
+    v0 = vtx[quad_indx[i]];
+    v1 = vtx[quad_indx[i+1]];
+    v2 = vtx[quad_indx[i+2]];
+    v3 = vtx[quad_indx[i+3]];
+    v01 = subtract( v1, v0 );
+    v02 = subtract( v2, v0 );
+    v03 = subtract( v3, v0 );
+    n0 = vec4( normalize( cross( v02, v01 ) ) );
+    n1 = vec4( normalize( cross( v03, v02 ) ) );
+    n0[3] = n1[3] = 0.0;
+    points.push( v0, v1, v2 );
+    points.push( v0, v2, v3 );
+    normals.push( n0, n0, n0, n1, n1, n1 );
+  }
+  return [points, normals]; 
+}
+
+function render() {
+  window.requestAnimFrame( render );
+  gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
+  
+  model_view = lookAt(eye, at , up);
+  proj = ortho(left, right, bottom, ytop, near, far);
+  normal_mat = [
+      vec3(model_view[0][0], model_view[0][1], model_view[0][2]),
+      vec3(model_view[1][0], model_view[1][1], model_view[1][2]),
+      vec3(model_view[2][0], model_view[2][1], model_view[2][2])
+  ];
+
+  gl.uniformMatrix4fv(model_view_loc, false, flatten(model_view) );
+  gl.uniformMatrix4fv(proj_loc, false, flatten(proj) );
+  gl.uniformMatrix3fv(normal_mat_loc, false, flatten(normal_mat) );
+  
+  gl.bindBuffer( gl.ARRAY_BUFFER, vtx_buf[model_indx]);
+  gl.vertexAttribPointer( pos_loc, 3, gl.FLOAT, false, 0, 0 );
+  gl.bindBuffer( gl.ARRAY_BUFFER, normal_buf[model_indx]);
+  gl.vertexAttribPointer( normal_loc, 4, gl.FLOAT, false, 0, 0 );
+  gl.uniform3fv(theta_loc, theta);
+  gl.uniform4fv(trans_loc, trans);
+  gl.uniform3fv(scale_loc, scale);
+  gl.uniform4fv( point_light_loc, flatten(point_light_pos) );
+  gl.uniform4fv( dir_light_loc, flatten(dir_light_pos) );
+  gl.uniform1i( has_point_light_loc , has_point_light );
+  gl.uniform1i( has_dir_light_loc , has_dir_light );
+  gl.drawArrays( gl.TRIANGLES, 0, data[model_indx][0].length ); 
 }
 
 function cube_vtx() {
@@ -3335,94 +3482,7 @@ function sph_tri_indx(){
   ];
 }
 
-
 function sph_quad_indx() {
     return [];
 }
 
-function to_gl_data(vtx, tri_indx, quad_indx){
-  if( ( tri_indx.length % 3 ) != 0 ) {
-    alert( " tri_indx.length must be divisible by 3 ");
-    return;
-  }
-  if( ( quad_indx.length % 4 ) != 0 ) {
-    alert( " quad_indx.length must be divisible by 4 ");
-    return;
-  }
-  var points = [];
-  var normals = [];
-  var v0, v1, v2, v3, v01, v02, v03, n0, n1;
-  for( var i = 0; i < tri_indx.length; i += 3){
-    v0 = vtx[tri_indx[i]];
-    v1 = vtx[tri_indx[i+1]];
-    v2 = vtx[tri_indx[i+2]];
-    v01 = subtract( v1, v0 );
-    v02 = subtract( v2, v0 );
-    n0 = vec4( normalize( cross( v02, v01 ) ) );
-    n0[3] = 0.0;
-    points.push( v0 , v1, v2 );
-    normals.push( n0, n0, n0 );     
-  }
-  for( var i = 0; i < quad_indx.length; i += 4){
-    v0 = vtx[quad_indx[i]];
-    v1 = vtx[quad_indx[i+1]];
-    v2 = vtx[quad_indx[i+2]];
-    v3 = vtx[quad_indx[i+3]];
-    v01 = subtract( v1, v0 );
-    v02 = subtract( v2, v0 );
-    v03 = subtract( v3, v0 );
-    n0 = vec4( normalize( cross( v02, v01 ) ) );
-    n1 = vec4( normalize( cross( v03, v02 ) ) );
-    n0[3] = n1[3] = 0.0;
-    points.push( v0, v1, v2 );
-    points.push( v0, v2, v3 );
-    normals.push( n0, n0, n0, n1, n1, n1 );
-  }
-  return [points, normals]; 
-}
-
-function render() {
-  window.requestAnimFrame( render );
-  gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
-  
-  // TODO test
-  theta[0][0] += 1;
-  theta[0][1] += 2;
-  theta[0][2] += 0;
-
-  theta[1][0] += 1;
-  theta[1][1] += 2;
-  theta[1][2] += 0;
-  
-  theta[2][0] += 1;
-  theta[2][1] += 2;
-  theta[2][2] += 0;
-
-  theta[3][0] += 1;
-  theta[3][1] += 2;
-  theta[3][2] += 0;
-  
-  model_view = lookAt(eye, at , up);
-  proj = ortho(left, right, bottom, ytop, near, far);
-  normal_mat = [
-      vec3(model_view[0][0], model_view[0][1], model_view[0][2]),
-      vec3(model_view[1][0], model_view[1][1], model_view[1][2]),
-      vec3(model_view[2][0], model_view[2][1], model_view[2][2])
-  ];
-
-  gl.uniformMatrix4fv(model_view_loc, false, flatten(model_view) );
-  gl.uniformMatrix4fv(proj_loc, false, flatten(proj) );
-  gl.uniformMatrix3fv(normal_mat_loc, false, flatten(normal_mat) );
-  
-  for (var i = 0; i < N_MODELS; ++i)
-  {
-    gl.bindBuffer( gl.ARRAY_BUFFER, vtx_buf[i]);
-    gl.vertexAttribPointer( pos_loc, 3, gl.FLOAT, false, 0, 0 );
-    gl.bindBuffer( gl.ARRAY_BUFFER, normal_buf[i]);
-    gl.vertexAttribPointer( normal_loc, 4, gl.FLOAT, false, 0, 0 );
-    gl.uniform3fv(theta_loc, theta[i]);
-    gl.uniform4fv(trans_loc, trans[i]);
-    gl.uniform3fv(scale_loc, scale[i]);
-    gl.drawArrays( gl.TRIANGLES, 0, data[i][0].length ); 
-  }
-}

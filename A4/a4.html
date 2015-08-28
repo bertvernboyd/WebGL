@@ -13,12 +13,13 @@ attribute vec4 vNormal;
 uniform vec3 theta;
 uniform vec4 translation;
 uniform vec3 scale;
+varying float att;
 
-
-varying vec3 N, L, E;
+varying vec3 N, Lp, Ld, E;
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
-uniform vec4 lightPosition;
+uniform vec4 pointLightPosition;
+uniform vec4 directionalLightPosition;
 uniform mat3 normalMatrix;
 
 void
@@ -55,10 +56,11 @@ main()
        
   vec3 pos = gl_Position.xyz;
  
-  // check for directional light
-  
-  if(lightPosition.w == 0.0) L = normalize(lightPosition.xyz);
-  else L = normalize( lightPosition.xyz - pos );
+  Ld = normalize( directionalLightPosition.xyz);
+  Lp = normalize( pointLightPosition.xyz - pos );
+  float len = length ( pointLightPosition.xyz - pos );
+  att = 1.0 / (1.0+0.02 * len * len);
+
   
   E =  -normalize(pos);
   N = normalize( (mat3(rz * ry * rx)*normalMatrix)*(modelViewMatrix*vNormal).xyz);
@@ -77,25 +79,40 @@ uniform vec4 ambientProduct;
 uniform vec4 diffuseProduct;
 uniform vec4 specularProduct;
 uniform float shininess;
-varying vec3 N, L, E;
+varying vec3 N, Lp, Ld, E;
+varying float att;
+uniform bool hasPointLight;
+uniform bool hasDirectionalLight;
 
 void
 main()
 { 
   vec4 fColor;
   
-  vec3 H = normalize( L + E );
+  vec3 Hp = normalize(   + E );
+  vec3 Hd = normalize( Ld + E );
   vec4 ambient = ambientProduct;
   
-  float Kd = max( dot(L, N), 0.0 );
-  vec4  diffuse = Kd*diffuseProduct;
+  float Kd_point = hasPointLight ? max( dot(Lp, N), 0.0 ) : 0.0;
+  float Kd_dir = hasDirectionalLight ? max( dot(Ld, N), 0.0 ) : 0.0;
+    
+  vec4  diffuse_point = Kd_point*diffuseProduct*att;
+  vec4  diffuse_dir = Kd_dir*diffuseProduct;
   
-  float Ks = pow( max(dot(N, H), 0.0), shininess );
-  vec4  specular = Ks * specularProduct;
+  float Ks_point = hasPointLight ? pow( max(dot(N, Hp), 0.0), shininess ) : 0.0;
+  float Ks_dir = hasDirectionalLight ? pow( max(dot(N, Hd), 0.0), shininess ) : 0.0;
   
-  if( dot(L, N) < 0.0 ) specular = vec4(0.0, 0.0, 0.0, 1.0);
+  vec4  specular_point = Ks_point*specularProduct*att;
+  vec4  specular_dir = Ks_dir*specularProduct*att;
   
-  fColor = ambient + diffuse +specular;
+  
+  if( dot(Lp, N) < 0.0 ) specular_point = vec4(0.0, 0.0, 0.0, 1.0);
+  if( dot(Ld, N) < 0.0 ) specular_dir = vec4(0.0, 0.0, 0.0, 1.0);
+  
+  vec4 diffuse = diffuse_point + diffuse_dir;
+  vec4 specular = specular_point + specular_dir;
+  
+  fColor = ambient + diffuse + specular;
   fColor.a = 1.0;
   
   gl_FragColor = fColor;
@@ -110,8 +127,126 @@ main()
 </head>   
 
 <body>
-  <canvas id="gl-canvas" width="768" height="768">
-    Oops ... your browser doesn't support the HTML5 canvas element
-  </canvas>
-</body>
+  <div class="col">
+    <canvas id="gl-canvas" width="768" height="768">
+      Oops ... your browser doesn't support the HTML5 canvas element
+    </canvas>
+  </div>
+  <div class="col" id="right">
+    <b>Model: </b>
+    <br/><br/>
+    
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <input id="cube" type="radio" 
+    name="models" checked="checked"/>
+    cube
+    <br/>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <input id="cone" type="radio"
+    name="models"/>
+    cone
+    <br/>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <input id="cylinder" type="radio"
+    name="models"/>
+    cylinder
+    <br/>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <input id="sphere" type="radio"
+    name="models"/>
+    sphere
+    <br/>
+    <br/> 
+ 
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <b>&theta;<sub>x</sub></b>
+    &nbsp;&nbsp;
+    <input id="rx" type="range"
+    min="-180" max="180" step="1" value="0" />
+    <br/>
+    
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <b>&theta;<sub>y</sub></b>
+    &nbsp;&nbsp;
+    <input id="ry" type="range"
+    min="-180" max="180" step="1" value="0" />
+    <br/>
+
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <b>&theta;<sub>z</sub></b>
+    &nbsp;&nbsp;
+    <input id="rz" type="range"
+    min="-180" max="180" step="1" value="0" />
+    <br/>
+    
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <sup>-&pi;</sup>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;
+    <sup>&pi;</sup>
+    <br/><br/><br/><br/>
+    
+    <input type="checkbox" id="point" checked="true">
+    <b>Point Light: </b>
+    <br/><br/>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+    <b>xy</b>
+    &nbsp;-&nbsp;
+    mouse cursor
+    <br/><br/>
+    
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+    <b>z</b>
+    &nbsp;&nbsp;
+    <input id="pz" type="range"
+    min="-10" max="10" step="0.1" value="0" />
+    <br/>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;
+    <sup>-</sup>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <sup>+</sup>
+    
+    <br/><br/><br/><br/>
+    
+    <input type="checkbox" id="directional">
+    <b>Directional Light: </b>
+    <br/><br/>   
+    
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+    <b>x</b>
+    &nbsp;&nbsp;
+    <input id="dx" type="range"
+    min="-1" max="1" step="0.1" value="0" />
+    <br/>
+
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+    <b>y</b>
+    &nbsp;&nbsp;
+    <input id="dy" type="range"
+    min="-1" max="1" step="0.1" value="0" />
+    <br/>    
+    
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+    <b>z</b>
+    &nbsp;&nbsp;
+    <input id="dz" type="range"
+    min="-1" max="1" step="0.1" value="1" />
+    <br/>
+    
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;
+    <sup>-</sup>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <sup>+</sup>
+
+      
+  </div>
+</body>r
 </html>
