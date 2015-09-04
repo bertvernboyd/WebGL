@@ -31,6 +31,6 @@ function render(){
   gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
   gl.bindBuffer( gl.ARRAY_BUFFER, v_buf);
   gl.vertexAttribPointer( pos_loc, 3, gl.FLOAT, false, 0, 0 );
-  gl.drawArrays( gl.TRIANGLES, 0, demo_vtx.length/3 ); // 1 triangle
+  gl.drawArrays( gl.TRIANGLES, 0, demo_vtx.length/3 ); 
 }
 
