@@ -11,7 +11,7 @@ var theta = [0.0, 0.0, 0.0];
 
 var theta_loc;
 
-var size = 1.0;
+var size = 1;
 
 var near = -10;
 var far = 10;
@@ -79,8 +79,6 @@ function configureTexture( image ) {
   gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER,
                     gl.NEAREST_MIPMAP_LINEAR );
   gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
-  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
 
   gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
 }
