@@ -7,11 +7,11 @@ var v_buf;
 var pos_loc;
 var program;
 
-var theta = [0.0, 0.0, 0.0];
+var theta = [0.0, 0.0, 23.0];
 
 var theta_loc;
 
-var size = 1;
+var size = 2;
 
 var near = -10;
 var far = 10;
@@ -23,7 +23,7 @@ var bottom = -size;
 var modelViewMatrix, projectionMatrix;
 var modelViewMatrixLoc, projectionMatrixLoc;
 
-var eye = vec3(0.0, 0.0, -5.0);
+var eye = vec3(0.0, 0.0, 5.0);
 var at = vec3(0.0, 0.0, 0.0);
 var up = vec3(0.0, 1.0, 0.0);
 
@@ -86,6 +86,19 @@ function configureTexture( image ) {
 window.onload = function init(){
     
   tetrahedron(va, vb, vc, vd, numTimesToSubdivide);
+  
+  $("#rx").val(theta[0]);
+  $("#rx").change(function() {
+    theta[0] = $("#rx").val();      
+  });
+  $("#ry").val(theta[1]);
+  $("#ry").change(function() {
+    theta[1] = $("#ry").val();    
+  });
+  $("#rz").val(theta[2]);
+  $("#rz").change(function() {
+    theta[2] = $("#rz").val();    
+  });
     
   var canvas = $( "#gl-canvas" );
   gl = WebGLUtils.setupWebGL( canvas[0] );
@@ -123,7 +136,6 @@ function render(){
   
   gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 
-  theta[1] += 0.2;
   modelViewMatrix = lookAt(eye, at , up);
   projectionMatrix = ortho(left, right, bottom, ytop, near, far);
 

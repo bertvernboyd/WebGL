@@ -1,0 +1,14 @@
+.col{
+  display: inline-block;
+  position: absolute;
+}
+
+#right{
+  top: 128px;
+  left: 796px;
+}
+
+#right_bot{
+  top: 512px;
+  left: 796px;
+}

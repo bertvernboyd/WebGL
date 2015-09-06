@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+    <link rel="stylesheet" type="text/css" href="a5.css">
+    <title>Assignment 5</title>
+
+    <script id="vertex-shader" type="x-shader/x-vertex">
+    
+      attribute vec4 vPosition;
+      uniform vec3 theta;
+      
+      uniform mat4 modelViewMatrix;
+      uniform mat4 projectionMatrix;
+      
+      varying float s, t;
+
+      void main()
+      {  
+        vec3 angles = radians( theta );
+        vec3 ca = cos( angles );
+        vec3 sa = sin( angles );
+
+        mat4 rx = mat4( 1.0,  0.0,  0.0, 0.0,
+        0.0,  ca.x,  sa.x, 0.0,
+        0.0, -sa.x,  ca.x, 0.0,
+        0.0,  0.0,  0.0, 1.0 );
+        
+        mat4 ry = mat4( ca.y, 0.0, -sa.y, 0.0,
+        0.0, 1.0,  0.0, 0.0,
+        sa.y, 0.0,  ca.y, 0.0,
+        0.0, 0.0,  0.0, 1.0 );
+        
+        mat4 rz = mat4( ca.z, sa.z, 0.0, 0.0,
+        -sa.z,  ca.z, 0.0, 0.0,
+        0.0,  0.0, 1.0, 0.0,
+        0.0,  0.0, 0.0, 1.0 );
+        
+        float pi = 2.0*acos(0.0);
+        
+        s = vPosition.x;
+        t = vPosition.y;
+
+        gl_Position = projectionMatrix * modelViewMatrix * rz * ry * rx * vPosition;
+      }
+    </script>
+
+    <script id="fragment-shader" type="x-shader/x-fragment">
+      precision mediump float;
+      
+      varying float s, t;
+      uniform sampler2D texture;
+
+      void main()
+      {
+        gl_FragColor = texture2D( texture, vec2(s, t));
+      }
+      </script>
+
+      <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+      <script type="text/javascript" src="../Common/webgl-utils.js"></script>
+      <script type="text/javascript" src="../Common/initShaders.js"></script>
+      <script type="text/javascript" src="../Common/MV.js"></script>
+      <script type="text/javascript" src="a5.js"></script>
+  </head>   
+  <body>
+    <div class="col">
+      <canvas id="gl-canvas" width="768" height="768">
+        Oops ... your browser doesn't support the HTML5 canvas element
+      </canvas>
+    </div>
+    <div id="right" class="col">
+      
+      <b>&theta;<sub>x</sub></b>
+      &nbsp;&nbsp;
+      <input id="rx" type="range"
+      min="-180" max="180" step="1" value="0" />
+      <br/>
+      
+      
+      <b>&theta;<sub>y</sub></b>
+      &nbsp;&nbsp;
+      <input id="ry" type="range"
+      min="-180" max="180" step="1" value="0" />
+      <br/>
+      
+      
+      <b>&theta;<sub>z</sub></b>
+      &nbsp;&nbsp;
+      <input id="rz" type="range"
+      min="-180" max="180" step="1" value="0" />
+      <br/>
+
+    </div>
+    <div id="right_bot" class="col">
+            
+      Checkerboard<br/>
+      Planar mapping
+      
+    </div>
+    <img id="texImage" src="assets/bw_checker.png" hidden/>
+  </body>
+</html>

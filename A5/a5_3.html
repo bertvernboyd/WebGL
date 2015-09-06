@@ -13,7 +13,6 @@
       uniform mat4 modelViewMatrix;
       uniform mat4 projectionMatrix;
       
-      
       varying float s, t;
 
       void main()
@@ -65,9 +64,40 @@
       <script type="text/javascript" src="a5.js"></script>
   </head>   
   <body>
-    <canvas id="gl-canvas" width="768" height="768">
-      Oops ... your browser doesn't support the HTML5 canvas element
-    </canvas>
+    <div class="col">
+      <canvas id="gl-canvas" width="768" height="768">
+        Oops ... your browser doesn't support the HTML5 canvas element
+      </canvas>
+    </div>
+    <div id="right" class="col">
+      
+      <b>&theta;<sub>x</sub></b>
+      &nbsp;&nbsp;
+      <input id="rx" type="range"
+      min="-180" max="180" step="1" value="0" />
+      <br/>
+      
+      
+      <b>&theta;<sub>y</sub></b>
+      &nbsp;&nbsp;
+      <input id="ry" type="range"
+      min="-180" max="180" step="1" value="0" />
+      <br/>
+      
+      
+      <b>&theta;<sub>z</sub></b>
+      &nbsp;&nbsp;
+      <input id="rz" type="range"
+      min="-180" max="180" step="1" value="0" />
+      <br/>
+
+    </div>
+    <div id="right_bot" class="col">
+            
+      Earth<br/>
+      Spherical mapping
+      
+    </div>
     <img id="texImage" src="assets/earth.png" hidden/>
   </body>
 </html>
